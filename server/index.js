@@ -196,9 +196,19 @@ app.post('/api/upload', upload.single('audio'), async (req, res) => {
       fs.remove(req.file.path).catch(console.error);
     }
     
+    // More specific error messages
+    let errorMessage = 'Failed to process audio';
+    if (error.message.includes('timeout')) {
+      errorMessage = 'Audio processing timed out. Please try a shorter recording.';
+    } else if (error.message.includes('API key')) {
+      errorMessage = 'API configuration error. Please contact support.';
+    } else if (error.message.includes('rate_limit')) {
+      errorMessage = 'API rate limit exceeded. Please wait a moment and try again.';
+    }
+    
     res.status(500).json({ 
-      error: 'Failed to process audio',
-      details: error.message 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
