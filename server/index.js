@@ -28,8 +28,9 @@ const openai = new OpenAI({
 // Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
-  resave: false,
-  saveUninitialized: false,
+  resave: true,
+  saveUninitialized: true,
+  name: 'sessionId',
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
@@ -104,13 +105,22 @@ app.get('/auth/google/callback',
     console.log('Session ID:', req.sessionID);
     console.log('Session:', req.session);
     
-    // Successful authentication
-    const redirectUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://ai-notetaker-platform.onrender.com' 
-      : 'http://localhost:3000';
-    
-    console.log('Redirecting to:', redirectUrl);
-    res.redirect(redirectUrl);
+    // Force session save
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+      } else {
+        console.log('Session saved successfully');
+      }
+      
+      // Successful authentication
+      const redirectUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://ai-notetaker-platform.onrender.com' 
+        : 'http://localhost:3000';
+      
+      console.log('Redirecting to:', redirectUrl);
+      res.redirect(redirectUrl);
+    });
   }
 );
 
