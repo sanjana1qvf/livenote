@@ -2,14 +2,22 @@ import React from 'react';
 import { Chrome } from 'lucide-react';
 
 const Login = () => {
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     console.log('Google login clicked - redirecting to OAuth...');
     // Use environment-based URL
     const backendUrl = process.env.NODE_ENV === 'production' 
       ? 'https://ai-notetaker-platform.onrender.com'
       : 'http://localhost:5000';
     
-    window.location.href = `${backendUrl}/auth/google`;
+    console.log('Redirecting to:', `${backendUrl}/auth/google`);
+    
+    // Force a full page redirect to bypass React Router
+    setTimeout(() => {
+      window.location.href = `${backendUrl}/auth/google`;
+    }, 100);
   };
 
   return (
@@ -33,6 +41,7 @@ const Login = () => {
           </div>
 
           <button
+            type="button"
             onClick={handleGoogleLogin}
             className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors font-medium"
           >
