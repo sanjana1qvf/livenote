@@ -12,12 +12,11 @@ const Login = () => {
       ? 'https://ai-notetaker-platform.onrender.com'
       : 'http://localhost:5000';
     
-    console.log('Redirecting to:', `${backendUrl}/auth/google`);
+    const authUrl = `${backendUrl}/auth/google`;
+    console.log('Redirecting to:', authUrl);
     
-    // Force a full page redirect to bypass React Router
-    setTimeout(() => {
-      window.location.href = `${backendUrl}/auth/google`;
-    }, 100);
+    // Use window.open briefly then redirect main window
+    window.location.assign(authUrl);
   };
 
   return (

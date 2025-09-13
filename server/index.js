@@ -32,7 +32,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 }));
 
@@ -98,11 +100,17 @@ app.get('/auth/google',
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
+    console.log('OAuth callback successful, user:', req.user);
+    console.log('Session ID:', req.sessionID);
+    console.log('Session:', req.session);
+    
     // Successful authentication
-    res.redirect(process.env.NODE_ENV === 'production' 
+    const redirectUrl = process.env.NODE_ENV === 'production' 
       ? 'https://ai-notetaker-platform.onrender.com' 
-      : 'http://localhost:3000'
-    );
+      : 'http://localhost:3000';
+    
+    console.log('Redirecting to:', redirectUrl);
+    res.redirect(redirectUrl);
   }
 );
 
@@ -116,6 +124,10 @@ app.post('/auth/logout', (req, res) => {
 });
 
 app.get('/auth/user', (req, res) => {
+  console.log('Auth check - Session ID:', req.sessionID);
+  console.log('Auth check - isAuthenticated:', req.isAuthenticated());
+  console.log('Auth check - user:', req.user);
+  
   if (req.isAuthenticated()) {
     res.json({ user: req.user });
   } else {
