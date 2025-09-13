@@ -106,3 +106,4 @@ uploads/
 *.mp3
 *.m4a
 *.ogg 
+.vercel
