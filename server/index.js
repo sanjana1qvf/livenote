@@ -30,10 +30,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
   resave: true,
   saveUninitialized: true,
-  name: 'sessionId',
+  name: 'connect.sid',
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
+    httpOnly: false, // Allow JavaScript access for debugging
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
@@ -45,10 +45,22 @@ app.use(passport.session());
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? 'https://ai-notetaker-platform.onrender.com'  // Update with your Render URL
-    : 'http://localhost:3000',
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = process.env.NODE_ENV === 'production' 
+      ? ['https://ai-notetaker-platform.onrender.com']
+      : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
 app.use(express.json());
 
@@ -135,6 +147,8 @@ app.post('/auth/logout', (req, res) => {
 
 app.get('/auth/user', (req, res) => {
   console.log('Auth check - Session ID:', req.sessionID);
+  console.log('Auth check - Cookies:', req.headers.cookie);
+  console.log('Auth check - Session:', req.session);
   console.log('Auth check - isAuthenticated:', req.isAuthenticated());
   console.log('Auth check - user:', req.user);
   
