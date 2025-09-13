@@ -2,22 +2,6 @@ import React from 'react';
 import { Chrome } from 'lucide-react';
 
 const Login = () => {
-  const handleGoogleLogin = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('Google login clicked - redirecting to OAuth...');
-    // Use environment-based URL
-    const backendUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://ai-notetaker-platform.onrender.com'
-      : 'http://localhost:5000';
-    
-    const authUrl = `${backendUrl}/auth/google`;
-    console.log('Redirecting to:', authUrl);
-    
-    // Use window.open briefly then redirect main window
-    window.location.assign(authUrl);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -39,14 +23,16 @@ const Login = () => {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+          <a
+            href={process.env.NODE_ENV === 'production' 
+              ? 'https://ai-notetaker-platform.onrender.com/auth/google'
+              : 'http://localhost:5000/auth/google'}
+            className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors font-medium text-decoration-none"
+            role="button"
           >
             <Chrome className="h-5 w-5 mr-3 text-blue-500" />
             Continue with Google
-          </button>
+          </a>
 
           <div className="mt-6">
             <div className="bg-blue-50 rounded-lg p-4">
