@@ -1,13 +1,7 @@
 {
   "functions": {
-    "server/index.js": {
+    "api/upload.js": {
       "maxDuration": 300
     }
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/server/index.js"
-    }
-  ]
+  }
 } 
