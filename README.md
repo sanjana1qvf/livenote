@@ -42,6 +42,21 @@ An AI-powered notetaker platform that allows students to record live lectures an
 
 This will start both the backend server (port 5000) and frontend development server (port 3000).
 
+## 🚀 Deploy Online
+
+### Quick Deploy to Heroku
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+### Other Deployment Options
+- **Vercel**: `vercel --prod`
+- **Railway**: One-click deploy from GitHub
+- **Render**: Connect repository and deploy
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+
+### Required Environment Variable
+- `OPENAI_API_KEY`: Your OpenAI API key (already configured in the code)
+
 ## Usage
 
 ### Recording a Lecture

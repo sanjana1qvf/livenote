@@ -3,13 +3,19 @@
   "version": "1.0.0",
   "description": "AI-powered notetaker platform for students to record lectures and generate notes",
   "main": "server/index.js",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
     "client": "cd client && npm start",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
     "build": "cd client && npm run build",
-    "start": "cd server && npm start"
+    "start": "cd server && npm start",
+    "deploy:build": "npm run install-all && npm run build",
+    "heroku-postbuild": "npm run deploy:build"
   },
   "keywords": ["ai", "notetaker", "openai", "transcription", "education"],
   "author": "AI Notetaker Team",

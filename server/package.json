@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Backend server for AI notetaker platform",
   "main": "index.js",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"

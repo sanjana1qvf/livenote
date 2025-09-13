@@ -1,0 +1,24 @@
+{
+  "name": "AI Notetaker Platform",
+  "description": "AI-powered notetaker platform for students to record lectures and generate notes using OpenAI",
+  "keywords": ["ai", "notetaker", "openai", "transcription", "education", "react", "nodejs"],
+  "website": "https://github.com/yourusername/ai-notetaker-platform",
+  "repository": "https://github.com/yourusername/ai-notetaker-platform",
+  "env": {
+    "NODE_ENV": {
+      "description": "Environment mode",
+      "value": "production"
+    },
+    "OPENAI_API_KEY": {
+      "description": "Your OpenAI API key for transcription and AI processing",
+      "required": true
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "addons": [],
+  "stack": "heroku-22"
+} 
