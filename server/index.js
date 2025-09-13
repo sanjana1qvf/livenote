@@ -32,10 +32,10 @@ app.use(session({
   saveUninitialized: true,
   name: 'connect.sid',
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Temporarily disable secure for testing
     httpOnly: false, // Allow JavaScript access for debugging
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    sameSite: 'lax' // Use lax instead of none
   }
 }));
 
@@ -167,6 +167,26 @@ app.get('/api/health', (req, res) => {
     authenticated: req.isAuthenticated(),
     user: req.user ? req.user.name : null,
     oauth_configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+  });
+});
+
+// Test cookie endpoint
+app.get('/api/test-cookie', (req, res) => {
+  console.log('Test cookie - Session ID:', req.sessionID);
+  console.log('Test cookie - Cookies:', req.headers.cookie);
+  
+  req.session.testData = 'Hello from session!';
+  res.cookie('testCookie', 'testValue', { 
+    httpOnly: false, 
+    secure: false, 
+    sameSite: 'lax',
+    maxAge: 60000 
+  });
+  
+  res.json({ 
+    message: 'Cookie set',
+    sessionId: req.sessionID,
+    cookies: req.headers.cookie
   });
 });
 
