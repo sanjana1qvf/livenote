@@ -35,7 +35,16 @@ An AI-powered notetaker platform that allows students to record live lectures an
    npm run install-all
    ```
 
-2. **Start the development servers**
+2. **Set up environment variables**
+   ```bash
+   # Copy the example environment file
+   cp server/.env.example server/.env
+   
+   # Edit the .env file and add your OpenAI API key
+   # OPENAI_API_KEY=your_openai_api_key_here
+   ```
+
+3. **Start the development servers**
    ```bash
    npm run dev
    ```
