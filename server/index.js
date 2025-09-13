@@ -19,20 +19,27 @@ const openai = new OpenAI({
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+// Serve uploads directory (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/uploads', express.static('uploads'));
+}
 
 // Serve static files from React build in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 }
 
-// Ensure uploads directory exists
-fs.ensureDirSync('uploads');
+// Ensure uploads directory exists (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  fs.ensureDirSync('uploads');
+}
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    // Use /tmp directory in serverless environment (Vercel)
+    const uploadDir = process.env.NODE_ENV === 'production' ? '/tmp' : 'uploads/';
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
