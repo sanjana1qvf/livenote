@@ -1,3 +1,6 @@
+// Load environment variables first
+require('dotenv').config({ path: '../.env' });
+
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
@@ -11,6 +14,11 @@ const { db } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+console.log('Environment check:');
+console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
+console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET');
+console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET');
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -35,7 +43,7 @@ app.use(passport.session());
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? 'https://your-app.onrender.com'  // Update with your Render URL
+    ? 'https://ai-notetaker-platform.onrender.com'  // Update with your Render URL
     : 'http://localhost:3000',
   credentials: true
 }));
@@ -92,7 +100,7 @@ app.get('/auth/google/callback',
   (req, res) => {
     // Successful authentication
     res.redirect(process.env.NODE_ENV === 'production' 
-      ? 'https://your-app.onrender.com' 
+      ? 'https://ai-notetaker-platform.onrender.com' 
       : 'http://localhost:3000'
     );
   }
@@ -121,7 +129,8 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     timestamp: new Date().toISOString(),
     authenticated: req.isAuthenticated(),
-    user: req.user ? req.user.name : null
+    user: req.user ? req.user.name : null,
+    oauth_configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
   });
 });
 

@@ -3,7 +3,13 @@ import { Chrome } from 'lucide-react';
 
 const Login = () => {
   const handleGoogleLogin = () => {
-    window.location.href = '/auth/google';
+    console.log('Google login clicked - redirecting to OAuth...');
+    // Use environment-based URL
+    const backendUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://ai-notetaker-platform.onrender.com'
+      : 'http://localhost:5000';
+    
+    window.location.href = `${backendUrl}/auth/google`;
   };
 
   return (
