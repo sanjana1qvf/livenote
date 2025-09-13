@@ -151,7 +151,7 @@ app.post('/api/upload', upload.single('audio'), async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are an expert note-taker. Create well-structured, detailed notes from lecture transcriptions. Use bullet points, headers, and clear organization. Include key concepts, definitions, examples, and important details that students should remember."
+          content: "You are an expert note-taker. Create clear, readable notes from lecture transcriptions using simple text formatting. Use dashes (-) for lists, regular text for headings, and standard punctuation. No markdown formatting like asterisks or hashtags. Write in a clean, student-friendly format with key concepts, definitions, examples, and important details."
         },
         {
           role: "user",
@@ -322,7 +322,7 @@ app.post('/api/merge-lecture', async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are an expert note-taker. Create well-structured, detailed notes from this complete lecture transcription. Use bullet points, headers, and clear organization. Include key concepts, definitions, examples, and important details that students should remember. This transcription comes from multiple audio segments of a single lecture session."
+          content: "You are an expert note-taker. Create clear, readable notes from this complete lecture transcription using simple text formatting. Use dashes (-) for lists, regular text for headings, and standard punctuation. No markdown formatting like asterisks or hashtags. Write in a clean, student-friendly format with key concepts, definitions, examples, and important details. This transcription comes from multiple audio segments of a single lecture session."
         },
         {
           role: "user",
