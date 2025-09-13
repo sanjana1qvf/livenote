@@ -2,12 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const OpenAI = require('openai');
+const sqlite3 = require('sqlite3').verbose();
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs-extra');
 const path = require('path');
-const session = require('express-session');
-const { passport, requireAuth } = require('./auth');
-const { db } = require('./database');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -17,30 +16,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
-
-// Initialize passport
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? 'https://your-app.onrender.com'  // Update with your Render URL
-    : 'http://localhost:3000',
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
-
 // Serve uploads directory (only in development)
 if (process.env.NODE_ENV !== 'production') {
   app.use('/uploads', express.static('uploads'));
@@ -59,6 +37,7 @@ if (process.env.NODE_ENV !== 'production') {
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Use /tmp directory in serverless environment (Vercel)
     const uploadDir = process.env.NODE_ENV === 'production' ? '/tmp' : 'uploads/';
     cb(null, uploadDir);
   },
@@ -82,52 +61,27 @@ const upload = multer({
   }
 });
 
-// Auth Routes
-app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
+// Initialize SQLite database
+const db = new sqlite3.Database('notetaker.db');
 
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    // Successful authentication
-    res.redirect(process.env.NODE_ENV === 'production' 
-      ? 'https://your-app.onrender.com' 
-      : 'http://localhost:3000'
-    );
-  }
-);
-
-app.post('/auth/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Logout failed' });
-    }
-    res.json({ message: 'Logged out successfully' });
-  });
+// Create tables
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS lectures (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    transcription TEXT,
+    summary TEXT,
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
 });
 
-app.get('/auth/user', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.json({ user: req.user });
-  } else {
-    res.status(401).json({ error: 'Not authenticated' });
-  }
-});
+// Routes
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    authenticated: req.isAuthenticated(),
-    user: req.user ? req.user.name : null
-  });
-});
-
-// Get user's lectures only
-app.get('/api/lectures', requireAuth, (req, res) => {
-  db.all('SELECT * FROM lectures WHERE user_id = ? ORDER BY created_at DESC', [req.user.id], (err, rows) => {
+// Get all lectures
+app.get('/api/lectures', (req, res) => {
+  db.all('SELECT * FROM lectures ORDER BY created_at DESC', (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -136,10 +90,10 @@ app.get('/api/lectures', requireAuth, (req, res) => {
   });
 });
 
-// Get specific lecture (user must own it)
-app.get('/api/lectures/:id', requireAuth, (req, res) => {
+// Get specific lecture
+app.get('/api/lectures/:id', (req, res) => {
   const { id } = req.params;
-  db.get('SELECT * FROM lectures WHERE id = ? AND user_id = ?', [id, req.user.id], (err, row) => {
+  db.get('SELECT * FROM lectures WHERE id = ?', [id], (err, row) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -152,8 +106,8 @@ app.get('/api/lectures/:id', requireAuth, (req, res) => {
   });
 });
 
-// Upload and process audio (user must be authenticated)
-app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) => {
+// Upload and process audio
+app.post('/api/upload', upload.single('audio'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No audio file uploaded' });
@@ -211,10 +165,10 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
     const summary = summaryResponse.choices[0].message.content;
     const notes = notesResponse.choices[0].message.content;
 
-    // Step 4: Save to database with user ID
+    // Step 4: Save to database
     db.run(
-      'INSERT INTO lectures (id, user_id, title, transcription, summary, notes) VALUES (?, ?, ?, ?, ?, ?)',
-      [lectureId, req.user.id, title || 'Untitled Lecture', transcription.text, summary, notes],
+      'INSERT INTO lectures (id, title, transcription, summary, notes) VALUES (?, ?, ?, ?, ?)',
+      [lectureId, title || 'Untitled Lecture', transcription.text, summary, notes],
       function(err) {
         if (err) {
           console.error('Database error:', err);
@@ -259,8 +213,8 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
   }
 });
 
-// Update lecture (user must own it)
-app.put('/api/lectures/:id', requireAuth, (req, res) => {
+// Update lecture
+app.put('/api/lectures/:id', (req, res) => {
   const { id } = req.params;
   const { title } = req.body;
 
@@ -269,15 +223,15 @@ app.put('/api/lectures/:id', requireAuth, (req, res) => {
   }
 
   db.run(
-    'UPDATE lectures SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-    [title.trim(), id, req.user.id],
+    'UPDATE lectures SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [title.trim(), id],
     function(err) {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
       if (this.changes === 0) {
-        res.status(404).json({ error: 'Lecture not found or unauthorized' });
+        res.status(404).json({ error: 'Lecture not found' });
         return;
       }
       res.json({ message: 'Lecture updated successfully', title: title.trim() });
@@ -285,24 +239,57 @@ app.put('/api/lectures/:id', requireAuth, (req, res) => {
   );
 });
 
-// Delete lecture (user must own it)
-app.delete('/api/lectures/:id', requireAuth, (req, res) => {
+// Delete lecture
+app.delete('/api/lectures/:id', (req, res) => {
   const { id } = req.params;
-  db.run('DELETE FROM lectures WHERE id = ? AND user_id = ?', [id, req.user.id], function(err) {
+  db.run('DELETE FROM lectures WHERE id = ?', [id], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
     }
     if (this.changes === 0) {
-      res.status(404).json({ error: 'Lecture not found or unauthorized' });
+      res.status(404).json({ error: 'Lecture not found' });
       return;
     }
     res.json({ message: 'Lecture deleted successfully' });
   });
 });
 
-// Merge multiple audio chunks into a single lecture (user must be authenticated)
-app.post('/api/merge-lecture', requireAuth, async (req, res) => {
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Serve React app for all other routes in production
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  });
+}
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File too large. Maximum size is 25MB.' });
+    }
+  }
+  res.status(500).json({ error: error.message });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/api/health`);
+}); 
+// Handle React routing, return all requests to React app
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
+
+// Merge multiple audio chunks into a single lecture
+app.post('/api/merge-lecture', async (req, res) => {
   try {
     const { title, chunks, mergedTranscription } = req.body;
     
@@ -350,10 +337,10 @@ app.post('/api/merge-lecture', requireAuth, async (req, res) => {
     const notes = notesResponse.choices[0].message.content;
     const lectureId = uuidv4();
 
-    // Store the merged lecture in database with user ID
+    // Store the merged lecture in database
     db.run(
-      'INSERT INTO lectures (id, user_id, title, transcription, summary, notes) VALUES (?, ?, ?, ?, ?, ?)',
-      [lectureId, req.user.id, title, mergedTranscription, summary, notes],
+      'INSERT INTO lectures (id, title, transcription, summary, notes) VALUES (?, ?, ?, ?, ?)',
+      [lectureId, title, mergedTranscription, summary, notes],
       function(err) {
         if (err) {
           console.error('Database error:', err);
@@ -392,25 +379,3 @@ app.post('/api/merge-lecture', requireAuth, async (req, res) => {
   }
 });
 
-// Error handling middleware
-app.use((error, req, res, next) => {
-  if (error instanceof multer.MulterError) {
-    if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File too large. Maximum size is 25MB.' });
-    }
-  }
-  res.status(500).json({ error: error.message });
-});
-
-// Handle React routing, return all requests to React app
-if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-  });
-}
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
-  console.log(`Google OAuth: http://localhost:${PORT}/auth/google`);
-});
