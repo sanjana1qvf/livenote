@@ -13,6 +13,7 @@ const LectureView = () => {
   const [copiedStates, setCopiedStates] = useState({});
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState('');
+  const [showFiltered, setShowFiltered] = useState(false);
 
   useEffect(() => {
     fetchLecture();
@@ -119,6 +120,7 @@ const LectureView = () => {
   const tabs = [
     { id: 'summary', label: 'Summary', icon: FileText },
     { id: 'notes', label: 'Notes', icon: FileText },
+    { id: 'academic', label: 'Academic Content', icon: FileText },
     { id: 'transcript', label: 'Full Transcript', icon: FileText },
   ];
 
@@ -211,7 +213,8 @@ const LectureView = () => {
                 <span className="hidden xs:block">{tab.label}</span>
                 <span className="block xs:hidden">
                   {tab.id === 'summary' ? 'Summary' : 
-                   tab.id === 'notes' ? 'Notes' : 'Transcript'}
+                   tab.id === 'notes' ? 'Notes' : 
+                   tab.id === 'academic' ? 'Academic' : 'Transcript'}
                 </span>
               </button>
             );
@@ -299,14 +302,82 @@ const LectureView = () => {
           </div>
         )}
 
+        {/* Academic Content Tab */}
+        {activeTab === 'academic' && (
+          <div className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Academic Content</h2>
+              <div className="flex items-center space-x-2 self-start sm:self-auto">
+                <button
+                  onClick={() => copyToClipboard(lecture.filtered_content || lecture.transcription, 'academic')}
+                  className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border rounded-md hover:bg-gray-50"
+                >
+                  {copiedStates.academic ? (
+                    <>
+                      <Check className="h-4 w-4 text-green-600" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => downloadAsText(lecture.filtered_content || lecture.transcription, `${lecture.title}-academic-content.txt`)}
+                  className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border rounded-md hover:bg-gray-50"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Download</span>
+                </button>
+              </div>
+            </div>
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                This tab shows only the academic and educational content from the lecture, with casual remarks, jokes, and off-topic discussions filtered out.
+              </p>
+              {lecture.filtered_content ? (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <p className="text-sm text-green-800">
+                    ✅ Academic content has been automatically filtered from the original transcript.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ This lecture was processed before the academic filtering feature was added. Showing original transcript.
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line font-mono text-sm">
+                {lecture.filtered_content || lecture.transcription}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Transcript Tab */}
         {activeTab === 'transcript' && (
           <div className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
               <h2 className="text-base sm:text-lg font-semibold text-gray-900">Full Transcript</h2>
               <div className="flex items-center space-x-2 self-start sm:self-auto">
+                {lecture.filtered_content && (
+                  <label className="flex items-center space-x-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={showFiltered}
+                      onChange={(e) => setShowFiltered(e.target.checked)}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-gray-600">Show filtered only</span>
+                  </label>
+                )}
                 <button
-                  onClick={() => copyToClipboard(lecture.transcription, 'transcript')}
+                  onClick={() => copyToClipboard(showFiltered && lecture.filtered_content ? lecture.filtered_content : lecture.transcription, 'transcript')}
                   className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border rounded-md hover:bg-gray-50"
                 >
                   {copiedStates.transcript ? (
@@ -322,7 +393,7 @@ const LectureView = () => {
                   )}
                 </button>
                 <button
-                  onClick={() => downloadAsText(lecture.transcription, `${lecture.title}-transcript.txt`)}
+                  onClick={() => downloadAsText(showFiltered && lecture.filtered_content ? lecture.filtered_content : lecture.transcription, `${lecture.title}-transcript.txt`)}
                   className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border rounded-md hover:bg-gray-50"
                 >
                   <Download className="h-4 w-4" />
@@ -331,8 +402,13 @@ const LectureView = () => {
               </div>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
+              <div className="mb-2 text-xs text-gray-500">
+                {showFiltered && lecture.filtered_content ? 
+                  'Showing academic content only (filtered)' : 
+                  'Showing complete original transcript'}
+              </div>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line font-mono text-sm">
-                {lecture.transcription}
+                {showFiltered && lecture.filtered_content ? lecture.filtered_content : lecture.transcription}
               </p>
             </div>
           </div>

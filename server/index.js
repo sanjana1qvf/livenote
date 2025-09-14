@@ -44,24 +44,21 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Middleware
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = process.env.NODE_ENV === 'production' 
-      ? ['https://ai-notetaker-platform.onrender.com']
-      : ['http://localhost:3000', 'http://127.0.0.1:3000'];
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
+// CORS configuration
+if (process.env.NODE_ENV === 'production') {
+  app.use(cors({
+    origin: ['https://ai-notetaker-platform.onrender.com'],
+    credentials: true,
+    optionsSuccessStatus: 200
+  }));
+} else {
+  // More permissive CORS for development
+  app.use(cors({
+    origin: true, // Allow all origins in development
+    credentials: true,
+    optionsSuccessStatus: 200
+  }));
+}
 app.use(express.json());
 
 // Serve uploads directory (only in development)
@@ -128,7 +125,7 @@ app.get('/auth/google/callback',
       // Successful authentication
       const redirectUrl = process.env.NODE_ENV === 'production' 
         ? 'https://ai-notetaker-platform.onrender.com' 
-        : 'http://localhost:3000';
+        : 'http://localhost:3001';
       
       console.log('Redirecting to:', redirectUrl);
       res.redirect(redirectUrl);
@@ -239,34 +236,54 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
 
     console.log('Transcription completed');
 
-    // Step 2: Generate summary using GPT
+    // Step 2: Filter and clean the transcription for academic content
+    const filterResponse = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert academic content filter. Your job is to extract ONLY the educational and academic content from lecture transcriptions. Remove all non-academic elements including: jokes, casual conversations, off-topic discussions, personal anecdotes unrelated to the subject, administrative announcements, technical difficulties, informal banter, and any content that doesn't contribute to learning the subject matter. Preserve the educational flow and maintain context, but focus strictly on academic concepts, explanations, examples, definitions, theories, and educational discussions. Keep the language formal and academic while preserving the core educational message."
+        },
+        {
+          role: "user",
+          content: `Please filter this lecture transcription to contain ONLY academic and educational content, removing all jokes, casual remarks, and non-educational material:\n\n${transcription.text}`
+        }
+      ],
+      max_tokens: 2000,
+      temperature: 0.2
+    });
+
+    const filteredContent = filterResponse.choices[0].message.content;
+    console.log('Content filtering completed');
+
+    // Step 3: Generate summary using filtered content
     const summaryResponse = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
-          content: "You are an expert at creating concise, informative summaries of lecture transcriptions. Create a summary that captures the main topics, key concepts, and important details."
+          content: "You are an expert at creating concise, informative summaries of academic lectures. Create a professional summary that captures the main educational topics, key academic concepts, theories, and important learning objectives. Focus on what students need to understand and remember for their studies."
         },
         {
           role: "user",
-          content: `Please create a comprehensive summary of this lecture transcription:\n\n${transcription.text}`
+          content: `Please create a comprehensive academic summary of this filtered lecture content:\n\n${filteredContent}`
         }
       ],
       max_tokens: 1000,
       temperature: 0.3
     });
 
-    // Step 3: Generate structured notes using GPT
+    // Step 4: Generate structured academic notes using filtered content
     const notesResponse = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
-          content: "You are an expert note-taker. Create clear, readable notes from lecture transcriptions using simple text formatting. Use dashes (-) for lists, plain text for section titles (no symbols), simple line breaks for organization, and standard punctuation. No markdown formatting whatsoever - no asterisks, hashtags, underscores, or any special symbols for formatting. Write in a clean, student-friendly format with key concepts, definitions, examples, and important details."
+          content: "You are an expert academic note-taker specializing in creating study-ready notes for students. Create clear, well-organized academic notes using simple text formatting. Use dashes (-) for lists, plain text for section titles, simple line breaks for organization, and standard punctuation. No markdown formatting whatsoever. Focus on key academic concepts, definitions, theories, formulas, examples, and important details that students need for studying and exams. Structure the notes logically with main topics, subtopics, and supporting details."
         },
         {
           role: "user",
-          content: `Please create detailed, well-structured notes from this lecture transcription:\n\n${transcription.text}`
+          content: `Please create detailed, well-structured academic notes from this filtered lecture content:\n\n${filteredContent}`
         }
       ],
       max_tokens: 1500,
@@ -276,10 +293,10 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
     const summary = summaryResponse.choices[0].message.content;
     const notes = notesResponse.choices[0].message.content;
 
-    // Step 4: Save to database with user ID
+    // Step 5: Save to database with user ID (including filtered content)
     db.run(
-      'INSERT INTO lectures (id, user_id, title, transcription, summary, notes) VALUES (?, ?, ?, ?, ?, ?)',
-      [lectureId, req.user.id, title || 'Untitled Lecture', transcription.text, summary, notes],
+      'INSERT INTO lectures (id, user_id, title, transcription, filtered_content, summary, notes) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [lectureId, req.user.id, title || 'Untitled Lecture', transcription.text, filteredContent, summary, notes],
       function(err) {
         if (err) {
           console.error('Database error:', err);
@@ -293,6 +310,7 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
           id: lectureId,
           title: title || 'Untitled Lecture',
           transcription: transcription.text,
+          filtered_content: filteredContent,
           summary,
           notes
         });
