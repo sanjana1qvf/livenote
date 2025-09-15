@@ -10,7 +10,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const session = require('express-session');
 const { passport, requireAuth } = require('./auth');
-const { db } = require('./database');
+const db = require('./firebase'); // Use Firebase/SQLite interface
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -188,33 +188,30 @@ app.get('/api/test-cookie', (req, res) => {
 });
 
 // Get user's lectures only
-app.get('/api/lectures', requireAuth, (req, res) => {
-  db.all('SELECT * FROM lectures WHERE user_id = ? ORDER BY created_at DESC', [req.user.id], (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json(rows);
-  });
+app.get('/api/lectures', requireAuth, async (req, res) => {
+  try {
+    const lectures = await db.getLectures(req.user.id);
+    res.json(lectures);
+  } catch (error) {
+    console.error('Error fetching lectures:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
-
 // Get specific lecture (user must own it)
-app.get('/api/lectures/:id', requireAuth, (req, res) => {
-  const { id } = req.params;
-  db.get('SELECT * FROM lectures WHERE id = ? AND user_id = ?', [id, req.user.id], (err, row) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (!row) {
+app.get('/api/lectures/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const lecture = await db.getLectureById(id, req.user.id);
+    if (!lecture) {
       res.status(404).json({ error: 'Lecture not found' });
       return;
     }
-    res.json(row);
-  });
-});
-
-// Upload and process audio (user must be authenticated)
+    res.json(lecture);
+  } catch (error) {
+    console.error('Error fetching lecture:', error);
+    res.status(500).json({ error: error.message });
+  }
+});// Upload and process audio (user must be authenticated)
 app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) => {
   try {
     if (!req.file) {
@@ -314,27 +311,27 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
     console.log('Q&A generation completed');
 
     // Step 6: Save to database with user ID (including filtered content and Q&A)
-    db.run(
-      'INSERT INTO lectures (id, user_id, title, transcription, filtered_content, summary, notes, qna) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [lectureId, req.user.id, title || 'Untitled Lecture', transcription.text, filteredContent, summary, notes, qna],
-      function(err) {
-        if (err) {
-          console.error('Database error:', err);
-          return res.status(500).json({ error: 'Database error' });
-        }
+    // Step 6: Save to database with user ID (including filtered content and Q&A)
+    const newLecture = {
+      id: lectureId,
+      user_id: req.user.id,
+      title: title || 'Untitled Lecture',
+      transcription: transcription.text,
+      filtered_content: filteredContent,
+      summary,
+      notes,
+      qna,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
-        console.log('Lecture saved to database successfully');
+    await db.createLecture(newLecture);
+    console.log('Lecture saved to database successfully');
 
-        // Clean up uploaded file
-        fs.remove(audioPath).catch(console.error);
+    // Clean up uploaded file
+    fs.remove(audioPath).catch(console.error);
 
-        res.json({
-          id: lectureId,
-          title: title || 'Untitled Lecture',
-          transcription: transcription.text,
-          filtered_content: filteredContent,
-          summary,
-          notes,
+    res.json(newLecture);          notes,
           qna
         });
       }
@@ -365,45 +362,42 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
 });
 
 // Update lecture (user must own it)
-app.put('/api/lectures/:id', requireAuth, (req, res) => {
-  const { id } = req.params;
-  const { title } = req.body;
+app.put('/api/lectures/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title } = req.body;
 
-  if (!title || !title.trim()) {
-    return res.status(400).json({ error: 'Title is required' });
-  }
-
-  db.run(
-    'UPDATE lectures SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-    [title.trim(), id, req.user.id],
-    function(err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      if (this.changes === 0) {
-        res.status(404).json({ error: 'Lecture not found or unauthorized' });
-        return;
-      }
-      res.json({ message: 'Lecture updated successfully', title: title.trim() });
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: 'Title is required' });
     }
-  );
-});
 
-// Delete lecture (user must own it)
-app.delete('/api/lectures/:id', requireAuth, (req, res) => {
-  const { id } = req.params;
-  db.run('DELETE FROM lectures WHERE id = ? AND user_id = ?', [id, req.user.id], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
+    const success = await db.updateLectureTitle(id, req.user.id, title.trim());
+    if (!success) {
+      res.status(404).json({ error: 'Lecture not found or unauthorized' });
       return;
     }
-    if (this.changes === 0) {
+    res.json({ message: 'Lecture updated successfully', title: title.trim() });
+  } catch (error) {
+    console.error('Error updating lecture:', error);
+    res.status(500).json({ error: error.message });
+  }
+});});
+
+// Delete lecture (user must own it)
+app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const success = await db.deleteLecture(id, req.user.id);
+    if (!success) {
       res.status(404).json({ error: 'Lecture not found or unauthorized' });
       return;
     }
     res.json({ message: 'Lecture deleted successfully' });
-  });
+  } catch (error) {
+    console.error('Error deleting lecture:', error);
+    res.status(500).json({ error: error.message });
+  }
+});  });
 });
 
 // Merge multiple audio chunks into a single lecture (user must be authenticated)
