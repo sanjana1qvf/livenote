@@ -151,16 +151,78 @@ class DatabaseInterface {
 
   async getLectures(userId) {
     if (this.isFirebase) {
-      const lecturesSnapshot = await this.db.collection('lectures')
-        .where('user_id', '==', userId)
-        .orderBy('created_at', 'desc')
-        .get();
-      
-      const lectures = [];
-      lecturesSnapshot.forEach(doc => {
-        lectures.push(doc.data());
-      });
-      return lectures;
+      try {
+        const lecturesSnapshot = await this.db.collection('lectures')
+          .where('user_id', '==', userId)
+          .orderBy('created_at', 'desc')
+          .get();
+        
+        const lectures = [];
+        lecturesSnapshot.forEach(doc => {
+          lectures.push(doc.data());
+        });
+        
+        const normalizeTimestampToIso = (value) => {
+          if (!value) return null;
+          if (typeof value.toDate === 'function') return value.toDate().toISOString();
+          if (value.seconds !== undefined && value.nanoseconds !== undefined) {
+            return new Date(value.seconds * 1000 + Math.floor(value.nanoseconds / 1e6)).toISOString();
+          }
+          const asDate = new Date(value);
+          return isNaN(asDate.getTime()) ? null : asDate.toISOString();
+        };
+        
+        return lectures.map(l => ({
+          ...l,
+          created_at: normalizeTimestampToIso(l.created_at) || l.created_at,
+          updated_at: normalizeTimestampToIso(l.updated_at) || l.updated_at
+        }));
+      } catch (error) {
+        const message = typeof error?.message === 'string' ? error.message : '';
+        const details = typeof error?.details === 'string' ? error.details : '';
+        const needsIndex = error?.code === 9 || message.includes('The query requires an index') || details.includes('The query requires an index');
+        
+        if (needsIndex) {
+          // Fallback: fetch without orderBy and sort in memory
+          const snapshot = await this.db.collection('lectures')
+            .where('user_id', '==', userId)
+            .get();
+
+          const lectures = [];
+          snapshot.forEach(doc => {
+            lectures.push(doc.data());
+          });
+
+          const toMillis = (value) => {
+            if (!value) return 0;
+            if (typeof value.toDate === 'function') return value.toDate().getTime();
+            if (value.seconds !== undefined && value.nanoseconds !== undefined) {
+              return value.seconds * 1000 + Math.floor(value.nanoseconds / 1e6);
+            }
+            const t = new Date(value).getTime();
+            return Number.isNaN(t) ? 0 : t;
+          };
+
+          lectures.sort((a, b) => toMillis(b.created_at) - toMillis(a.created_at));
+
+          const normalizeTimestampToIso = (value) => {
+            if (!value) return null;
+            if (typeof value.toDate === 'function') return value.toDate().toISOString();
+            if (value.seconds !== undefined && value.nanoseconds !== undefined) {
+              return new Date(value.seconds * 1000 + Math.floor(value.nanoseconds / 1e6)).toISOString();
+            }
+            const asDate = new Date(value);
+            return isNaN(asDate.getTime()) ? null : asDate.toISOString();
+          };
+
+          return lectures.map(l => ({
+            ...l,
+            created_at: normalizeTimestampToIso(l.created_at) || l.created_at,
+            updated_at: normalizeTimestampToIso(l.updated_at) || l.updated_at
+          }));
+        }
+        throw error;
+      }
     } else {
       return new Promise((resolve, reject) => {
         this.sqliteDb.all(

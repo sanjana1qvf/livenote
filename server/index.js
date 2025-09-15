@@ -1,5 +1,5 @@
 // Load environment variables first
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config({ path: './.env' });
 
 const express = require('express');
 const cors = require('cors');
@@ -197,6 +197,7 @@ app.get('/api/lectures', requireAuth, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 // Get specific lecture (user must own it)
 app.get('/api/lectures/:id', requireAuth, async (req, res) => {
   try {
@@ -211,7 +212,9 @@ app.get('/api/lectures/:id', requireAuth, async (req, res) => {
     console.error('Error fetching lecture:', error);
     res.status(500).json({ error: error.message });
   }
-});// Upload and process audio (user must be authenticated)
+});
+
+// Upload and process audio (user must be authenticated)
 app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) => {
   try {
     if (!req.file) {
@@ -330,7 +333,8 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
     // Clean up uploaded file
     fs.remove(audioPath).catch(console.error);
 
-    res.json(newLecture);  } catch (error) {
+    res.json(newLecture);
+  } catch (error) {
     console.error('Error processing audio:', error);
     
     // Clean up uploaded file on error
@@ -356,7 +360,6 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
 });
 
 // Update lecture (user must own it)
-// Update lecture (user must own it)
 app.put('/api/lectures/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -376,7 +379,7 @@ app.put('/api/lectures/:id', requireAuth, async (req, res) => {
     console.error('Error updating lecture:', error);
     res.status(500).json({ error: error.message });
   }
-
+});
 
 // Delete lecture (user must own it)
 app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
@@ -392,7 +395,8 @@ app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
     console.error('Error deleting lecture:', error);
     res.status(500).json({ error: error.message });
   }
-});  });
+});
+
 // Merge multiple audio chunks into a single lecture (user must be authenticated)
 app.post('/api/merge-lecture', requireAuth, async (req, res) => {
   try {
@@ -442,28 +446,29 @@ app.post('/api/merge-lecture', requireAuth, async (req, res) => {
     const notes = notesResponse.choices[0].message.content;
     const lectureId = uuidv4();
 
-    // Store the merged lecture in database with user ID
-    db.run(
-      'INSERT INTO lectures (id, user_id, title, transcription, summary, notes) VALUES (?, ?, ?, ?, ?, ?)',
-      [lectureId, req.user.id, title, mergedTranscription, summary, notes],
-      function(err) {
-        if (err) {
-          console.error('Database error:', err);
-          res.status(500).json({ error: 'Failed to save merged lecture' });
-          return;
-        }
+    // Store the merged lecture in database using Firebase interface
+    const newLecture = {
+      id: lectureId,
+      user_id: req.user.id,
+      title,
+      transcription: mergedTranscription,
+      summary,
+      notes,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
-        console.log('Merged lecture saved successfully');
-        res.json({
-          id: lectureId,
-          title,
-          transcription: mergedTranscription,
-          summary,
-          notes,
-          chunks: chunks.length
-        });
-      }
-    );
+    await db.createLecture(newLecture);
+    console.log('Merged lecture saved successfully');
+    
+    res.json({
+      id: lectureId,
+      title,
+      transcription: mergedTranscription,
+      summary,
+      notes,
+      chunks: chunks.length
+    });
 
   } catch (error) {
     console.error('Error merging lecture chunks:', error);
