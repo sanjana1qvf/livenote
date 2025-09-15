@@ -293,37 +293,15 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
     const summary = summaryResponse.choices[0].message.content;
     const notes = notesResponse.choices[0].message.content;
 
-    // Step 5: Generate Q&A using filtered content
-    const qaResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert educator who creates comprehensive study questions and answers from academic content. Generate important questions that test understanding of key concepts, definitions, theories, and practical applications. Format each Q&A as 'Q: [question]' followed by 'A: [detailed answer]' on the next line. Create questions that would help students prepare for exams, covering main topics, important details, and critical thinking aspects. Include different types of questions: factual, conceptual, analytical, and application-based. Make answers detailed and educational."
-        },
-        {
-          role: "user",
-          content: `Please create comprehensive study questions and answers from this lecture content. Generate 8-12 important questions that cover the main topics and key concepts:\n\n${filteredContent}`
-        }
-      ],
-      max_tokens: 2000,
-      temperature: 0.3
-    });
-
-    const qna = qaResponse.choices[0].message.content;
-    console.log('Q&A generation completed');
-
-    // Step 6: Save to database with user ID (including filtered content and Q&A)
+    // Step 5: Save to database with user ID (including filtered content)
     db.run(
-      'INSERT INTO lectures (id, user_id, title, transcription, filtered_content, summary, notes, qna) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [lectureId, req.user.id, title || 'Untitled Lecture', transcription.text, filteredContent, summary, notes, qna],
+      'INSERT INTO lectures (id, user_id, title, transcription, filtered_content, summary, notes) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [lectureId, req.user.id, title || 'Untitled Lecture', transcription.text, filteredContent, summary, notes],
       function(err) {
         if (err) {
           console.error('Database error:', err);
           return res.status(500).json({ error: 'Database error' });
         }
-
-        console.log('Lecture saved to database successfully');
 
         // Clean up uploaded file
         fs.remove(audioPath).catch(console.error);
@@ -334,11 +312,11 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
           transcription: transcription.text,
           filtered_content: filteredContent,
           summary,
-          notes,
-          qna
+          notes
         });
       }
     );
+
   } catch (error) {
     console.error('Error processing audio:', error);
     
