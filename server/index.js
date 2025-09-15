@@ -311,7 +311,6 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
     console.log('Q&A generation completed');
 
     // Step 6: Save to database with user ID (including filtered content and Q&A)
-    // Step 6: Save to database with user ID (including filtered content and Q&A)
     const newLecture = {
       id: lectureId,
       user_id: req.user.id,
@@ -331,12 +330,7 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
     // Clean up uploaded file
     fs.remove(audioPath).catch(console.error);
 
-    res.json(newLecture);          notes,
-          qna
-        });
-      }
-    );
-  } catch (error) {
+    res.json(newLecture);  } catch (error) {
     console.error('Error processing audio:', error);
     
     // Clean up uploaded file on error
@@ -362,6 +356,7 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
 });
 
 // Update lecture (user must own it)
+// Update lecture (user must own it)
 app.put('/api/lectures/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -381,7 +376,7 @@ app.put('/api/lectures/:id', requireAuth, async (req, res) => {
     console.error('Error updating lecture:', error);
     res.status(500).json({ error: error.message });
   }
-});});
+
 
 // Delete lecture (user must own it)
 app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
@@ -398,8 +393,6 @@ app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });  });
-});
-
 // Merge multiple audio chunks into a single lecture (user must be authenticated)
 app.post('/api/merge-lecture', requireAuth, async (req, res) => {
   try {
