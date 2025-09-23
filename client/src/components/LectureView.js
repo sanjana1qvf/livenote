@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContextSimple';
 import { ArrowLeft, Calendar, Clock, FileText, Download, Copy, Check, Edit3, X, FileDown, ChevronDown } from 'lucide-react';
