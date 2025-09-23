@@ -19,7 +19,18 @@ const openai = new OpenAI({
 
 // CORS configuration
 app.use(cors({
-  origin: true, // Allow all origins in development
+// Additional headers for mobile compatibility
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  if (req.method === "OPTIONS") {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+  origin: true, // Allow all origins for mobile access
   credentials: true
 }));
 
@@ -448,6 +459,8 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
   }
 });
 
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, "../client/build")));
 // Serve React app for all other routes (SPA)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
