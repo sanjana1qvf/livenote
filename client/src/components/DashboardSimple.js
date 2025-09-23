@@ -23,7 +23,7 @@ const Dashboard = () => {
     }
 
     try {
-      const response = await fetch('${API_BASE_URL}/api/lectures', {
+      const response = await fetch(`${API_BASE_URL}/api/lectures`, {
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()

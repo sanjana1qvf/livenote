@@ -90,7 +90,7 @@ app.get('/api/lectures', requireAuth, async (req, res) => {
 // Get specific lecture
 app.get('/api/lectures/:id', requireAuth, async (req, res) => {
   try {
-    const lecture = await db.getLectureById(req.params.id);
+    const lecture = await db.getLectureById(req.params.id, req.user.id);
     if (!lecture) {
       return res.status(404).json({ error: 'Lecture not found' });
     }
@@ -111,7 +111,7 @@ app.get('/api/lectures/:id', requireAuth, async (req, res) => {
 app.put('/api/lectures/:id', requireAuth, async (req, res) => {
   try {
     const { title } = req.body;
-    const lecture = await db.getLectureById(req.params.id);
+    const lecture = await db.getLectureById(req.params.id, req.user.id);
     
     if (!lecture) {
       return res.status(404).json({ error: 'Lecture not found' });
@@ -133,7 +133,7 @@ app.put('/api/lectures/:id', requireAuth, async (req, res) => {
 // Delete lecture
 app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
   try {
-    const lecture = await db.getLectureById(req.params.id);
+    const lecture = await db.getLectureById(req.params.id, req.user.id);
     
     if (!lecture) {
       return res.status(404).json({ error: 'Lecture not found' });
