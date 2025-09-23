@@ -1,3 +1,5 @@
+// Dynamic API URL - works for both local and production
+const API_BASE_URL = process.env.NODE_ENV === "production" ? "" : "http://localhost:5000";
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContextSimple';
@@ -43,7 +45,7 @@ const LectureView = () => {
 
   const fetchLecture = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/lectures/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/lectures/${id}`, {
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
@@ -85,7 +87,7 @@ const LectureView = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/lectures/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/lectures/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
