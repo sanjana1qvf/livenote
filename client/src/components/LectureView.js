@@ -1,10 +1,10 @@
-// Dynamic API URL - works for both local and production
-const API_BASE_URL = process.env.NODE_ENV === "production" ? "" : "http://localhost:5000";
-import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContextSimple';
 import { ArrowLeft, Calendar, Clock, FileText, Download, Copy, Check, Edit3, X, FileDown, ChevronDown } from 'lucide-react';
 import jsPDF from 'jspdf';
+
+// Dynamic API URL - works for both local and production
+const API_BASE_URL = process.env.NODE_ENV === "production" ? "" : "http://localhost:5000";
 
 const LectureView = () => {
   const { id } = useParams();

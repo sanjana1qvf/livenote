@@ -1,9 +1,9 @@
-// Dynamic API URL - works for both local and production
-const API_BASE_URL = process.env.NODE_ENV === "production" ? "" : "http://localhost:5000";
-import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContextSimple';
 import { Calendar, Clock, FileText, Trash2, Plus, Edit3, Check, X } from 'lucide-react';
+
+// Dynamic API URL - works for both local and production
+const API_BASE_URL = process.env.NODE_ENV === "production" ? "" : "http://localhost:5000";
 
 const Dashboard = () => {
   const [lectures, setLectures] = useState([]);
