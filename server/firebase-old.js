@@ -2,7 +2,6 @@
 require('dotenv').config({ path: '../.env' });
 
 const admin = require('firebase-admin');
-const sqlite3 = require('sqlite3').verbose();
 
 // Initialize Firebase Admin SDK
 let db = null;
@@ -50,14 +49,20 @@ if (process.env.NODE_ENV === 'production') {
     }
   } catch (error) {
     console.error('❌ Firebase initialization failed:', error.message);
-    console.log('⚠️ Falling back to SQLite');
+    console.log('📱 Using SQLite for development');
   }
 }
 
-// Initialize SQLite database
-const sqliteDb = new sqlite3.Database('notetaker.db');
+// Fallback to SQLite if Firebase is not available
+const sqlite3 = require('sqlite3').verbose();
+let sqliteDb = null;
 
-// Database interface class
+if (!isFirebaseEnabled) {
+  sqliteDb = new sqlite3.Database('notetaker.db');
+  console.log('📱 SQLite database initialized');
+}
+
+// Database Interface Class
 class DatabaseInterface {
   constructor() {
     this.isFirebase = isFirebaseEnabled;
@@ -68,54 +73,26 @@ class DatabaseInterface {
   // User operations
   async createUser(userData) {
     if (this.isFirebase) {
-      if (userData.google_id) {
-        // Google OAuth user
-        const userRef = this.db.collection('users').doc(userData.google_id);
-        await userRef.set({
-          google_id: userData.google_id,
-          email: userData.email,
-          name: userData.name,
-          picture: userData.picture,
-          created_at: admin.firestore.FieldValue.serverTimestamp()
-        });
-        return { id: userData.google_id, ...userData };
-      } else {
-        // Simple auth user
-        const userRef = this.db.collection('users').doc();
-        await userRef.set({
-          name: userData.name,
-          email: userData.email,
-          password: userData.password,
-          created_at: admin.firestore.FieldValue.serverTimestamp()
-        });
-        return { id: userRef.id, ...userData };
-      }
+      const userRef = this.db.collection('users').doc(userData.google_id);
+      await userRef.set({
+        google_id: userData.google_id,
+        email: userData.email,
+        name: userData.name,
+        picture: userData.picture,
+        created_at: admin.firestore.FieldValue.serverTimestamp()
+      });
+      return { id: userData.google_id, ...userData };
     } else {
-      if (userData.google_id) {
-        // Google OAuth user
-        return new Promise((resolve, reject) => {
-          this.sqliteDb.run(
-            'INSERT INTO users (google_id, email, name, picture) VALUES (?, ?, ?, ?)',
-            [userData.google_id, userData.email, userData.name, userData.picture],
-            function(err) {
-              if (err) reject(err);
-              else resolve({ id: this.lastID, ...userData });
-            }
-          );
-        });
-      } else {
-        // Simple auth user
-        return new Promise((resolve, reject) => {
-          this.sqliteDb.run(
-            'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-            [userData.name, userData.email, userData.password],
-            function(err) {
-              if (err) reject(err);
-              else resolve({ id: this.lastID, ...userData });
-            }
-          );
-        });
-      }
+      return new Promise((resolve, reject) => {
+        this.sqliteDb.run(
+          'INSERT INTO users (google_id, email, name, picture) VALUES (?, ?, ?, ?)',
+          [userData.google_id, userData.email, userData.name, userData.picture],
+          function(err) {
+            if (err) reject(err);
+            else resolve({ id: this.lastID, ...userData });
+          }
+        );
+      });
     }
   }
 
@@ -132,51 +109,6 @@ class DatabaseInterface {
         this.sqliteDb.get(
           'SELECT * FROM users WHERE google_id = ?',
           [googleId],
-          (err, row) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
-    }
-  }
-
-  async findUserByEmail(email) {
-    if (this.isFirebase) {
-      const usersSnapshot = await this.db.collection('users').where('email', '==', email).get();
-      if (!usersSnapshot.empty) {
-        const userDoc = usersSnapshot.docs[0];
-        const userData = userDoc.data();
-        return { id: userDoc.id, ...userData };
-      }
-      return null;
-    } else {
-      return new Promise((resolve, reject) => {
-        this.sqliteDb.get(
-          'SELECT * FROM users WHERE email = ?',
-          [email],
-          (err, row) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
-    }
-  }
-
-  async findUserById(id) {
-    if (this.isFirebase) {
-      const userDoc = await this.db.collection('users').doc(id).get();
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        return { id: userDoc.id, ...userData };
-      }
-      return null;
-    } else {
-      return new Promise((resolve, reject) => {
-        this.sqliteDb.get(
-          'SELECT * FROM users WHERE id = ?',
-          [id],
           (err, row) => {
             if (err) reject(err);
             else resolve(row);
@@ -217,14 +149,80 @@ class DatabaseInterface {
     }
   }
 
-  async getLecturesByUserId(userId) {
+  async getLectures(userId) {
     if (this.isFirebase) {
-      const lecturesSnapshot = await this.db.collection('lectures').where('user_id', '==', userId).get();
-      const lectures = [];
-      lecturesSnapshot.forEach(doc => {
-        lectures.push({ id: doc.id, ...doc.data() });
-      });
-      return lectures;
+      try {
+        const lecturesSnapshot = await this.db.collection('lectures')
+          .where('user_id', '==', userId)
+          .orderBy('created_at', 'desc')
+          .get();
+        
+        const lectures = [];
+        lecturesSnapshot.forEach(doc => {
+          lectures.push(doc.data());
+        });
+        
+        const normalizeTimestampToIso = (value) => {
+          if (!value) return null;
+          if (typeof value.toDate === 'function') return value.toDate().toISOString();
+          if (value.seconds !== undefined && value.nanoseconds !== undefined) {
+            return new Date(value.seconds * 1000 + Math.floor(value.nanoseconds / 1e6)).toISOString();
+          }
+          const asDate = new Date(value);
+          return isNaN(asDate.getTime()) ? null : asDate.toISOString();
+        };
+        
+        return lectures.map(l => ({
+          ...l,
+          created_at: normalizeTimestampToIso(l.created_at) || l.created_at,
+          updated_at: normalizeTimestampToIso(l.updated_at) || l.updated_at
+        }));
+      } catch (error) {
+        const message = typeof error?.message === 'string' ? error.message : '';
+        const details = typeof error?.details === 'string' ? error.details : '';
+        const needsIndex = error?.code === 9 || message.includes('The query requires an index') || details.includes('The query requires an index');
+        
+        if (needsIndex) {
+          // Fallback: fetch without orderBy and sort in memory
+          const snapshot = await this.db.collection('lectures')
+            .where('user_id', '==', userId)
+            .get();
+
+          const lectures = [];
+          snapshot.forEach(doc => {
+            lectures.push(doc.data());
+          });
+
+          const toMillis = (value) => {
+            if (!value) return 0;
+            if (typeof value.toDate === 'function') return value.toDate().getTime();
+            if (value.seconds !== undefined && value.nanoseconds !== undefined) {
+              return value.seconds * 1000 + Math.floor(value.nanoseconds / 1e6);
+            }
+            const t = new Date(value).getTime();
+            return Number.isNaN(t) ? 0 : t;
+          };
+
+          lectures.sort((a, b) => toMillis(b.created_at) - toMillis(a.created_at));
+
+          const normalizeTimestampToIso = (value) => {
+            if (!value) return null;
+            if (typeof value.toDate === 'function') return value.toDate().toISOString();
+            if (value.seconds !== undefined && value.nanoseconds !== undefined) {
+              return new Date(value.seconds * 1000 + Math.floor(value.nanoseconds / 1e6)).toISOString();
+            }
+            const asDate = new Date(value);
+            return isNaN(asDate.getTime()) ? null : asDate.toISOString();
+          };
+
+          return lectures.map(l => ({
+            ...l,
+            created_at: normalizeTimestampToIso(l.created_at) || l.created_at,
+            updated_at: normalizeTimestampToIso(l.updated_at) || l.updated_at
+          }));
+        }
+        throw error;
+      }
     } else {
       return new Promise((resolve, reject) => {
         this.sqliteDb.all(
@@ -245,7 +243,7 @@ class DatabaseInterface {
       if (lectureDoc.exists) {
         const lectureData = lectureDoc.data();
         if (lectureData.user_id === userId) {
-          return { id: lectureDoc.id, ...lectureData };
+          return lectureData;
         }
       }
       return null;
@@ -263,52 +261,27 @@ class DatabaseInterface {
     }
   }
 
-  async updateLecture(lectureId, userId, updateData) {
+  async updateLectureTitle(lectureId, userId, newTitle) {
     if (this.isFirebase) {
       const lectureRef = this.db.collection('lectures').doc(lectureId);
       const lectureDoc = await lectureRef.get();
       
-      if (!lectureDoc.exists) {
-        return null;
+      if (lectureDoc.exists && lectureDoc.data().user_id === userId) {
+        await lectureRef.update({
+          title: newTitle,
+          updated_at: admin.firestore.FieldValue.serverTimestamp()
+        });
+        return true;
       }
-      
-      const lectureData = lectureDoc.data();
-      if (lectureData.user_id !== userId) {
-        return null;
-      }
-      
-      await lectureRef.update({
-        ...updateData,
-        updated_at: admin.firestore.FieldValue.serverTimestamp()
-      });
-      
-      return { id: lectureId, ...lectureData, ...updateData };
+      return false;
     } else {
       return new Promise((resolve, reject) => {
-        // First check if lecture exists and belongs to user
-        this.sqliteDb.get(
-          'SELECT * FROM lectures WHERE id = ? AND user_id = ?',
-          [lectureId, userId],
-          (err, row) => {
-            if (err) {
-              reject(err);
-            } else if (!row) {
-              resolve(null);
-            } else {
-              // Update the lecture
-              const updateFields = Object.keys(updateData).map(key => `${key} = ?`).join(', ');
-              const values = Object.values(updateData);
-              values.push(lectureId, userId);
-              
-              this.sqliteDb.run(
-                `UPDATE lectures SET ${updateFields} WHERE id = ? AND user_id = ?`,
-                values,
-                function(err) {
-                  if (err) reject(err);
-                  else resolve({ id: lectureId, ...row, ...updateData });
-                }
-              );
-            }
+        this.sqliteDb.run(
+          'UPDATE lectures SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+          [newTitle, lectureId, userId],
+          function(err) {
+            if (err) reject(err);
+            else resolve(this.changes > 0);
           }
         );
       });
@@ -320,17 +293,11 @@ class DatabaseInterface {
       const lectureRef = this.db.collection('lectures').doc(lectureId);
       const lectureDoc = await lectureRef.get();
       
-      if (!lectureDoc.exists) {
-        return false;
+      if (lectureDoc.exists && lectureDoc.data().user_id === userId) {
+        await lectureRef.delete();
+        return true;
       }
-      
-      const lectureData = lectureDoc.data();
-      if (lectureData.user_id !== userId) {
-        return false;
-      }
-      
-      await lectureRef.delete();
-      return true;
+      return false;
     } else {
       return new Promise((resolve, reject) => {
         this.sqliteDb.run(

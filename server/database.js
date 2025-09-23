@@ -5,12 +5,13 @@ const db = new sqlite3.Database('notetaker.db');
 
 // Create tables
 db.serialize(() => {
-  // Users table
+  // Users table - supports both Google OAuth and simple auth
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    google_id TEXT UNIQUE NOT NULL,
-    email TEXT NOT NULL,
+    google_id TEXT UNIQUE,
+    email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
+    password TEXT,
     picture TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
@@ -24,22 +25,13 @@ db.serialize(() => {
     filtered_content TEXT,
     summary TEXT,
     notes TEXT,
+    qna TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`);
 
-  // Add filtered_content column to existing tables (migration)
-  db.run(`ALTER TABLE lectures ADD COLUMN filtered_content TEXT`, (err) => {
-    if (err && err.message.includes('duplicate column name')) {
-      // Column already exists, ignore error
-      console.log('Column filtered_content already exists');
-    } else if (err) {
-      console.error('Error adding filtered_content column:', err);
-    } else {
-      console.log('Added filtered_content column to lectures table');
-    }
-  });
+  console.log('✅ Database tables created successfully');
 });
 
 module.exports = { db };

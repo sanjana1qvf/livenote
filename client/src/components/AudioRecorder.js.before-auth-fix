@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Mic, Square, Upload, Play, Pause, Trash2, Clock, HardDrive } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContextSimple';
 
 const AudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -28,7 +27,6 @@ const AudioRecorder = () => {
   const chunkTimerRef = useRef(null);
 
   const navigate = useNavigate();
-  const { getAuthHeaders } = useAuth();
 
   // Auto-chunking settings
   const CHUNK_DURATION = 15 * 60; // 15 minutes per chunk (in seconds)
@@ -88,7 +86,7 @@ const AudioRecorder = () => {
         if (isRecording) {
           // Start new chunk
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: "audio/webm" });
+          mediaRecorderRef.current = new MediaRecorder(stream);
           chunksRef.current = [];
 
           mediaRecorderRef.current.ondataavailable = (event) => {
@@ -126,7 +124,7 @@ const AudioRecorder = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      mediaRecorderRef.current = new MediaRecorder(stream);
       chunksRef.current = [];
       setChunks([]);
       setCurrentChunk(0);
@@ -249,16 +247,13 @@ const AudioRecorder = () => {
         setProcessingStep(`Processing chunk ${i + 1} of ${chunksToProcess.length}...`);
         
         const formData = new FormData();
-        formData.append('audio', chunk.blob, `chunk-${chunk.chunkNumber}.webm`);
+        formData.append('audio', chunk.blob, `chunk-${chunk.chunkNumber}.wav`);
         formData.append('title', `${title || 'Untitled Lecture'} - Part ${chunk.chunkNumber}`);
 
-        const response = await axios.post('http://localhost:5000/api/upload', formData, {
+        const response = await axios.post('/api/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-            ...getAuthHeaders()
           },
-        }, {
-          headers: getAuthHeaders()
         });
 
         processedResults.push({
@@ -266,8 +261,6 @@ const AudioRecorder = () => {
           chunkNumber: chunk.chunkNumber,
           startTime: chunk.startTime || 0,
           endTime: chunk.endTime || recordingTime
-        }, {
-          headers: getAuthHeaders()
         });
 
         setProcessedChunks(prev => [...prev, response.data]);
@@ -281,12 +274,10 @@ const AudioRecorder = () => {
           .map(result => result.transcription)
           .join('\n\n');
 
-        const mergedSummaryResponse = await axios.post('http://localhost:5000/api/merge-lecture', {
+        const mergedSummaryResponse = await axios.post('/api/merge-lecture', {
           title: title || 'Untitled Lecture',
           chunks: processedResults,
           mergedTranscription
-        }, {
-          headers: getAuthHeaders()
         });
 
         navigate(`/lecture/${mergedSummaryResponse.data.id}`);

@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContextSimple';
-import HeaderSimple from './components/HeaderSimple';
-import DashboardSimple from './components/DashboardSimple';
+import Header from './components/Header';
+import Dashboard from './components/Dashboard';
 import AudioRecorder from './components/AudioRecorder';
 import LectureView from './components/LectureView';
 import SimpleAuth from './components/SimpleAuth';
@@ -29,10 +29,10 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <HeaderSimple />
+      <Header />
       <main className="container mx-auto px-4 py-6 sm:py-8">
         <Routes>
-          <Route path="/" element={<DashboardSimple />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/record" element={<AudioRecorder />} />
           <Route path="/lecture/:id" element={<LectureView />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,56 +1,105 @@
+// Load environment variables first
+require('dotenv').config({ path: './.env' });
+
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs-extra');
-const { v4: uuidv4 } = require('uuid');
-const OpenAI = require('openai');
-const ffmpeg = require('fluent-ffmpeg');
 const cors = require('cors');
-const { requireAuth, register, login, getProfile } = require('./auth-simple');
-const db = require('./firebase');
+const multer = require('multer');
+const OpenAI = require('openai');
+const { v4: uuidv4 } = require('uuid');
+const fs = require('fs-extra');
+const path = require('path');
+const session = require('express-session');
+const { passport, requireAuth } = require('./auth');
+const db = require('./firebase'); // Use Firebase/SQLite interface
+const ffmpeg = require('fluent-ffmpeg');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+console.log('Environment check:');
+console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
+console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET');
+console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET');
 
 // Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// CORS configuration
-app.use(cors({
-  origin: process.env.NODE_ENV === "production" ? [process.env.RENDER_EXTERNAL_URL || "https://your-app.onrender.com"] : true, // Production CORS
-  credentials: true
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
+  resave: true,
+  saveUninitialized: true,
+  name: 'connect.sid',
+  cookie: {
+    secure: false, // Temporarily disable secure for testing
+    httpOnly: false, // Allow JavaScript access for debugging
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax' // Use lax instead of none
+  }
 }));
 
-// Middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
 
-// Configure multer for file uploads with increased limits
+// Middleware
+// CORS configuration
+if (process.env.NODE_ENV === 'production') {
+  app.use(cors({
+    origin: ['https://ai-notetaker-platform.onrender.com'],
+    credentials: true,
+    optionsSuccessStatus: 200
+  }));
+} else {
+  // More permissive CORS for development
+  app.use(cors({
+    origin: true, // Allow all origins in development
+    credentials: true,
+    optionsSuccessStatus: 200
+  }));
+}
+app.use(express.json());
+
+// Serve uploads directory (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/uploads', express.static('uploads'));
+}
+
+// Serve static files from React build in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+}
+
+// Ensure uploads directory exists (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  fs.ensureDirSync('uploads');
+}
+
+// Configure multer for file uploads with increased limits for long lectures
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = 'uploads';
-    fs.ensureDirSync(uploadDir);
+    const uploadDir = process.env.NODE_ENV === 'production' ? '/tmp' : 'uploads/';
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const uniqueName = `audio-${Date.now()}-${Math.floor(Math.random() * 1000000000)}.webm`;
-    cb(null, uniqueName);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
-const upload = multer({
+const upload = multer({ 
   storage: storage,
-  limits: {
-    fileSize: 200 * 1024 * 1024, // 200MB limit
-  },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('audio/')) {
       cb(null, true);
     } else {
       cb(new Error('Only audio files are allowed!'), false);
     }
+  },
+  limits: {
+    fileSize: 200 * 1024 * 1024 // 200MB limit for long lectures
   }
 });
 
@@ -70,37 +119,40 @@ function getAudioDuration(filePath) {
 // Helper function to split audio into chunks
 function splitAudioIntoChunks(inputPath, outputDir, chunkDurationMinutes = 10) {
   return new Promise((resolve, reject) => {
-    const chunkPaths = [];
+    const chunks = [];
     let currentChunk = 0;
+    const chunkDurationSeconds = chunkDurationMinutes * 60;
     
     ffmpeg(inputPath)
       .on('end', () => {
-        resolve(chunkPaths);
+        resolve(chunks);
       })
       .on('error', (err) => {
         reject(err);
       })
       .on('progress', (progress) => {
-        if (progress.percent) {
-          console.log(`Processing: ${Math.round(progress.percent)}% done`);
-        }
+        console.log(`Processing chunk ${currentChunk + 1}: ${progress.percent}% done`);
       })
-      .on('codecData', (data) => {
-        console.log(`Input audio: ${data.audio} audio, ${data.video} video`);
-      })
+      .outputOptions([
+        `-f segment`,
+        `-segment_time ${chunkDurationSeconds}`,
+        `-c copy`,
+        `-reset_timestamps 1`
+      ])
+      .output(`${outputDir}/chunk_%03d.wav`)
       .on('start', (commandLine) => {
-        console.log('Spawned FFmpeg with command: ' + commandLine);
-      })
-      .on('stderr', (stderrLine) => {
-        console.log('FFmpeg stderr: ' + stderrLine);
-      })
-      .on('error', (err) => {
-        console.error('FFmpeg error: ' + err.message);
-        reject(err);
+        console.log('Spawned Ffmpeg with command: ' + commandLine);
       })
       .on('end', () => {
-        console.log('Audio splitting completed');
-        resolve(chunkPaths);
+        // Get list of generated chunks
+        fs.readdir(outputDir)
+          .then(files => {
+            const chunkFiles = files
+              .filter(file => file.startsWith('chunk_') && file.endsWith('.wav'))
+              .sort();
+            resolve(chunkFiles.map(file => path.join(outputDir, file)));
+          })
+          .catch(reject);
       })
       .run();
   });
@@ -161,19 +213,63 @@ async function processAudioChunks(chunkPaths, lectureId) {
   };
 }
 
+// Auth Routes
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    console.log('OAuth callback successful, user:', req.user);
+    console.log('Session ID:', req.sessionID);
+    console.log('Session:', req.session);
+    
+    // Force session save
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+      } else {
+        console.log('Session saved successfully');
+      }
+      res.redirect('http://localhost:3000');
+    });
+  }
+);
+
+// Logout route
+app.get('/auth/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.error('Logout error:', err);
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Session destroy error:', err);
+      }
+      res.redirect('http://localhost:3000');
+    });
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
+  res.json({ 
+    status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });
 });
 
-// Authentication routes
-app.post('/api/auth/register', register);
-app.post('/api/auth/login', login);
-app.get('/api/auth/profile', requireAuth, getProfile);
+// Get user profile
+app.get('/api/profile', requireAuth, (req, res) => {
+  res.json({
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email,
+    picture: req.user.picture
+  });
+});
 
 // Get all lectures for authenticated user
 app.get('/api/lectures', requireAuth, async (req, res) => {
@@ -191,11 +287,10 @@ app.get('/api/lectures/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const lecture = await db.getLectureById(id, req.user.id);
-    
     if (!lecture) {
-      return res.status(404).json({ error: 'Lecture not found' });
+      res.status(404).json({ error: 'Lecture not found' });
+      return;
     }
-    
     res.json(lecture);
   } catch (error) {
     console.error('Error fetching lecture:', error);
@@ -203,47 +298,7 @@ app.get('/api/lectures/:id', requireAuth, async (req, res) => {
   }
 });
 
-// Update lecture endpoint
-app.put('/api/lectures/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title } = req.body;
-    
-    if (!title || !title.trim()) {
-      return res.status(400).json({ error: 'Title is required' });
-    }
-    
-    const success = await db.updateLecture(id, req.user.id, { title: title.trim() });
-    
-    if (!success) {
-      return res.status(404).json({ error: 'Lecture not found' });
-    }
-    
-    res.json({ message: 'Lecture updated successfully', title: title.trim() });
-  } catch (error) {
-    console.error('Error updating lecture:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Delete lecture endpoint
-app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const success = await db.deleteLecture(id, req.user.id);
-    
-    if (!success) {
-      return res.status(404).json({ error: 'Lecture not found' });
-    }
-    
-    res.json({ message: 'Lecture deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting lecture:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Upload and process audio (user must be authenticated)
+// Enhanced upload and process audio for long lectures
 app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) => {
   try {
     if (!req.file) {
@@ -258,10 +313,9 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
 
     // Get audio duration
     const duration = await getAudioDuration(audioPath);
-    console.log(`Audio duration: ${Math.floor(duration / 60)} minutes`);
+    console.log(`Audio duration: ${Math.round(duration / 60)} minutes`);
 
-    let transcription;
-    let filteredContent;
+    let transcription, filteredContent;
 
     // Check if audio is longer than 10 minutes (600 seconds)
     if (duration > 600) {
@@ -448,19 +502,59 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
   }
 });
 
-// Serve static files from React build
-app.use(express.static(path.join(__dirname, "../client/build")));
+// Update lecture endpoint
+app.put('/api/lectures/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, summary, notes } = req.body;
+    
+    const updatedLecture = await db.updateLecture(id, req.user.id, {
+      title,
+      summary,
+      notes,
+      updated_at: new Date().toISOString()
+    });
+    
+    if (!updatedLecture) {
+      return res.status(404).json({ error: 'Lecture not found' });
+    }
+    
+    res.json(updatedLecture);
+  } catch (error) {
+    console.error('Error updating lecture:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete lecture endpoint
+app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const success = await db.deleteLecture(id, req.user.id);
+    
+    if (!success) {
+      return res.status(404).json({ error: 'Lecture not found' });
+    }
+    
+    res.json({ message: 'Lecture deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting lecture:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Serve React app for all other routes (SPA)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  if (process.env.NODE_ENV === 'production') {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  } else {
+    res.redirect('http://localhost:3000');
+  }
 });
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
-  console.log(`Register: http://localhost:${PORT}/api/auth/register`);
-  console.log(`Login: http://localhost:${PORT}/api/auth/login`);
+  console.log(`Google OAuth: http://localhost:${PORT}/auth/google`);
 });
-
-module.exports = app;

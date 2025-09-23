@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ai-notetaker-platform
+    env: node
+    plan: free
+    buildCommand: npm run deploy:build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: OPENAI_API_KEY
+        sync: false
+    healthCheckPath: /api/health
