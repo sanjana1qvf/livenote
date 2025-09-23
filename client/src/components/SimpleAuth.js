@@ -26,7 +26,7 @@ const SimpleAuth = ({ onLogin }) => {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(`http://192.168.1.21:5000${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

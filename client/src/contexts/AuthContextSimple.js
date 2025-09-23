@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       
       if (token && userData) {
         // Verify token is still valid by checking profile
-        const response = await fetch('http://localhost:5000/api/auth/profile', {
+        const response = await fetch('http://192.168.1.21:5000/api/auth/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

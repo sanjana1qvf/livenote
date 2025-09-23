@@ -43,7 +43,7 @@ const LectureView = () => {
 
   const fetchLecture = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/lectures/${id}`, {
+      const response = await fetch(`http://192.168.1.21:5000/api/lectures/${id}`, {
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
@@ -85,7 +85,7 @@ const LectureView = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/lectures/${id}`, {
+      const response = await fetch(`http://192.168.1.21:5000/api/lectures/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

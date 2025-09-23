@@ -26,7 +26,7 @@ const Login = () => {
           <a
             href={process.env.NODE_ENV === 'production' 
               ? 'https://ai-notetaker-platform.onrender.com/auth/google'
-              : 'http://localhost:5000/auth/google'}
+              : 'http://192.168.1.21:5000/auth/google'}
             className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 transition-colors font-medium text-decoration-none"
             role="button"
           >
