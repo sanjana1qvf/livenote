@@ -1,9 +1,9 @@
-import API_BASE_URL from "../config";
 import React, { useState } from 'react';
-import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, X } from 'lucide-react';
+import API_BASE_URL from "../config";
 
-const SimpleAuth = ({ onLogin }) => {
-  const [isLogin, setIsLogin] = useState(true);
+const AuthModal = ({ isOpen, onClose, mode, onSuccess }) => {
+  const [isLogin, setIsLogin] = useState(mode === 'login');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -42,25 +42,34 @@ const SimpleAuth = ({ onLogin }) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Call the onLogin callback with user data
-        onLogin(data.user);
+        // Call the success callback with user data
+        onSuccess(data.user);
+        onClose();
       } else {
-        setError(data.error || 'An error occurred');
+        setError(data.message || 'An error occurred');
       }
-    } catch (err) {
+    } catch (error) {
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setError('');
+    setFormData({ name: '', email: '', password: '' });
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          {/* Logo Only - 100% larger */}
-          <div className="flex justify-center mb-6">
-            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-lg overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+        {/* Header with Logo - 100% larger */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden">
               <img 
                 src="/logo.png" 
                 alt="AI Notetaker Logo" 
@@ -68,19 +77,29 @@ const SimpleAuth = ({ onLogin }) => {
               />
             </div>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600">
-            {isLogin 
-              ? 'Sign in to access your lectures and notes'
-              : 'Get started with AI-powered note-taking'
-            }
-          </p>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Form */}
+        <div className="p-4 sm:p-6">
+          <div className="text-center mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              {isLogin ? 'Welcome Back' : 'Create Account'}
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              {isLogin 
+                ? 'Sign in to access your lectures and notes'
+                : 'Get started with AI-powered note-taking'
+              }
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {!isLogin && (
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -162,11 +181,11 @@ const SimpleAuth = ({ onLogin }) => {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600 text-sm">
+          <div className="mt-4 sm:mt-6 text-center">
+            <p className="text-gray-600 text-xs sm:text-sm">
               {isLogin ? "Don't have an account? " : "Already have an account? "}
               <button
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={toggleMode}
                 className="text-blue-600 hover:text-blue-700 font-semibold"
               >
                 {isLogin ? 'Sign Up' : 'Sign In'}
@@ -179,4 +198,4 @@ const SimpleAuth = ({ onLogin }) => {
   );
 };
 
-export default SimpleAuth;
+export default AuthModal;

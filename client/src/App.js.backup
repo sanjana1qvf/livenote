@@ -5,7 +5,7 @@ import HeaderSimple from './components/HeaderSimple';
 import DashboardSimple from './components/DashboardSimple';
 import AudioRecorder from './components/AudioRecorder';
 import LectureView from './components/LectureView';
-import LandingPage from './components/LandingPage';
+import SimpleAuth from './components/SimpleAuth';
 import './index.css';
 
 // Loading component
@@ -24,14 +24,7 @@ const AppContent = () => {
   }
 
   if (!user) {
-    return (
-      <LandingPage 
-        onAuthSuccess={(userData) => {
-          // Update the auth context with the new user data
-          login(userData);
-        }}
-      />
-    );
+    return <SimpleAuth onLogin={login} />;
   }
 
   return (
