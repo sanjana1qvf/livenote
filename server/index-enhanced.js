@@ -1,255 +1,181 @@
-// Load environment variables first
-require('dotenv').config({ path: './.env' });
-
 const express = require('express');
-const cors = require('cors');
 const multer = require('multer');
-const OpenAI = require('openai');
-const { v4: uuidv4 } = require('uuid');
-const fs = require('fs-extra');
 const path = require('path');
-const session = require('express-session');
-const { passport, requireAuth } = require('./auth');
-const db = require('./firebase'); // Use Firebase/SQLite interface
+const fs = require('fs-extra');
+const { v4: uuidv4 } = require('uuid');
+const OpenAI = require('openai');
 const ffmpeg = require('fluent-ffmpeg');
+const cors = require('cors');
+const { requireAuth, register, login, getProfile } = require('./auth-simple');
+const db = require('./firebase');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-console.log('Environment check:');
-console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
-console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET');
-console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET');
 
 // Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
-  resave: true,
-  saveUninitialized: true,
-  name: 'connect.sid',
-  cookie: {
-    secure: false, // Temporarily disable secure for testing
-    httpOnly: false, // Allow JavaScript access for debugging
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'lax' // Use lax instead of none
-  }
-}));
-
-// Initialize passport
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Middleware
-// CORS configuration
-if (process.env.NODE_ENV === 'production') {
-  app.use(cors({
-    origin: ['https://ai-notetaker-platform.onrender.com'],
-    credentials: true,
-    optionsSuccessStatus: 200
-  }));
-} else {
-  // More permissive CORS for development
-  app.use(cors({
-    origin: true, // Allow all origins in development
-    credentials: true,
-    optionsSuccessStatus: 200
-  }));
-}
-app.use(express.json());
-
-// Serve uploads directory (only in development)
-if (process.env.NODE_ENV !== 'production') {
-  app.use('/uploads', express.static('uploads'));
-}
-
-// Serve static files from React build in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-}
-
-// Ensure uploads directory exists (only in development)
-if (process.env.NODE_ENV !== 'production') {
-  fs.ensureDirSync('uploads');
-}
-
-// Configure multer for file uploads with increased limits for long lectures
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = process.env.NODE_ENV === 'production' ? '/tmp' : 'uploads/';
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ 
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('audio/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only audio files are allowed!'), false);
-    }
-  },
-  limits: {
-    fileSize: 200 * 1024 * 1024 // 200MB limit for long lectures
-  }
-});
-
-// Helper function to get audio duration
-function getAudioDuration(filePath) {
+// Enhanced audio preprocessing for classroom noise handling
+async function preprocessAudioForClassroom(audioPath) {
+  const processedPath = audioPath.replace(/.webm$/, "_processed.webm");
+  
   return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(metadata.format.duration);
-      }
-    });
-  });
-}
-
-// Helper function to split audio into chunks
-function splitAudioIntoChunks(inputPath, outputDir, chunkDurationMinutes = 10) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    let currentChunk = 0;
-    const chunkDurationSeconds = chunkDurationMinutes * 60;
-    
-    ffmpeg(inputPath)
-      .on('end', () => {
-        resolve(chunks);
-      })
-      .on('error', (err) => {
-        reject(err);
-      })
-      .on('progress', (progress) => {
-        console.log(`Processing chunk ${currentChunk + 1}: ${progress.percent}% done`);
-      })
-      .outputOptions([
-        `-f segment`,
-        `-segment_time ${chunkDurationSeconds}`,
-        `-c copy`,
-        `-reset_timestamps 1`
+    ffmpeg(audioPath)
+      .audioFilters([
+        "highpass=f=200",     // Remove low-frequency noise (AC, fans, rumble)
+        "lowpass=f=8000",     // Remove high-frequency noise (hiss, static)
+        "dynaudnorm",         // Dynamic audio normalization for consistent volume
+        "afftdn",             // Advanced noise reduction filter
+        "volume=1.2"          // Boost volume for better clarity
       ])
-      .output(`${outputDir}/chunk_%03d.wav`)
-      .on('start', (commandLine) => {
-        console.log('Spawned Ffmpeg with command: ' + commandLine);
+      .audioCodec("libopus")
+      .audioBitrate("128k")
+      .output(processedPath)
+      .on("end", () => {
+        console.log("✅ Audio preprocessed for classroom environment");
+        resolve(processedPath);
       })
-      .on('end', () => {
-        // Get list of generated chunks
-        fs.readdir(outputDir)
-          .then(files => {
-            const chunkFiles = files
-              .filter(file => file.startsWith('chunk_') && file.endsWith('.wav'))
-              .sort();
-            resolve(chunkFiles.map(file => path.join(outputDir, file)));
-          })
-          .catch(reject);
+      .on("error", (err) => {
+        console.log("⚠️ Audio preprocessing failed, using original:", err.message);
+        resolve(audioPath); // Fallback to original audio
       })
       .run();
   });
 }
 
-// Helper function to process audio chunks
-async function processAudioChunks(chunkPaths, lectureId) {
-  const allTranscriptions = [];
-  const allFilteredContent = [];
+// Enhanced content filtering for classroom environments
+async function filterClassroomContent(transcription) {
+  const filterResponse = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert content filter for educational environments. Your task is to:\n\n1. EXTRACT ONLY the main teacher/instructor content\n2. REMOVE all student conversations, side discussions, and background chatter\n3. REMOVE classroom noise, interruptions, and off-topic discussions\n4. FOCUS on educational content, explanations, and key concepts\n5. PRESERVE the logical flow of the lecture\n6. REMOVE filler words, repetitions, and irrelevant content\n7. IMPORTANT: Always respond in English, regardless of input language\n8. TRANSLATE any non-English content to English while preserving meaning\n\nReturn only the filtered educational content, no explanations."
+      },
+      {
+        role: "user",
+        content: transcription
+      }
+    ],
+    max_tokens: 4000,
+    temperature: 0.2
+  });
   
-  console.log(`Processing ${chunkPaths.length} audio chunks...`);
-  
-  for (let i = 0; i < chunkPaths.length; i++) {
-    const chunkPath = chunkPaths[i];
-    console.log(`Processing chunk ${i + 1}/${chunkPaths.length}: ${chunkPath}`);
-    
-    try {
-      // Transcribe chunk
-      const transcription = await openai.audio.transcriptions.create({
-        file: fs.createReadStream(chunkPath),
-        model: "whisper-1",
-        language: "en"
-      });
-      
-      allTranscriptions.push(transcription.text);
-      
-      // Filter content for this chunk
-      const filterResponse = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert academic content filter. Extract ONLY educational and academic content from lecture transcriptions. Remove jokes, casual conversations, off-topic discussions, personal anecdotes, administrative announcements, technical difficulties, and informal banter. Preserve educational flow and maintain context, focusing on academic concepts, explanations, examples, definitions, theories, and educational discussions."
-          },
-          {
-            role: "user",
-            content: `Please filter this lecture transcription segment to contain ONLY academic and educational content:\n\n${transcription.text}`
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.2
-      });
-      
-      allFilteredContent.push(filterResponse.choices[0].message.content);
-      
-      // Clean up chunk file
-      fs.remove(chunkPath).catch(console.error);
-      
-    } catch (error) {
-      console.error(`Error processing chunk ${i + 1}:`, error);
-      // Continue with other chunks even if one fails
-    }
-  }
-  
-  return {
-    fullTranscription: allTranscriptions.join('\n\n'),
-    fullFilteredContent: allFilteredContent.join('\n\n')
-  };
+  return filterResponse.choices[0].message.content;
 }
 
-// Auth Routes
-app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
-
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    console.log('OAuth callback successful, user:', req.user);
-    console.log('Session ID:', req.sessionID);
-    console.log('Session:', req.session);
-    
-    // Force session save
-    req.session.save((err) => {
-      if (err) {
-        console.error('Session save error:', err);
-      } else {
-        console.log('Session saved successfully');
+// Enhanced summary generation for classroom content
+async function generateClassroomSummary(filteredContent) {
+  const summaryResponse = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert at creating educational summaries. Create a comprehensive summary that:\n\n1. FOCUSES on the main educational concepts taught\n2. HIGHLIGHTS key learning objectives and takeaways\n3. ORGANIZES content by topics and themes\n4. PRESERVES the logical flow of the lecture\n5. REMOVES any remaining noise or irrelevant content\n6. IMPORTANT: Always respond in English, regardless of input language\n7. TRANSLATE any non-English content to English while preserving meaning\n\nCreate a clear, educational summary suitable for student review."
+      },
+      {
+        role: "user",
+        content: filteredContent
       }
-      res.redirect('http://localhost:3000');
-    });
-  }
-);
-
-// Logout route
-app.get('/auth/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      console.error('Logout error:', err);
-    }
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Session destroy error:', err);
-      }
-      res.redirect('http://localhost:3000');
-    });
+    ],
+    max_tokens: 1000,
+    temperature: 0.3
   });
+  
+  return summaryResponse.choices[0].message.content;
+}
+
+// Enhanced notes generation for classroom environments
+async function generateClassroomNotes(filteredContent) {
+  const notesResponse = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert note-taker for educational content. Create comprehensive, well-structured notes that:\n\n1. ORGANIZE content by main topics and subtopics\n2. HIGHLIGHT key concepts, definitions, and important points\n3. INCLUDE examples, explanations, and clarifications\n4. STRUCTURE with clear headings and bullet points\n5. FOCUS on educational value and learning outcomes\n6. REMOVE any remaining noise or irrelevant content\n7. IMPORTANT: Always respond in English, regardless of input language\n8. TRANSLATE any non-English content to English while preserving meaning\n\nCreate notes that students can use for effective studying and review."
+      },
+      {
+        role: "user",
+        content: filteredContent
+      }
+    ],
+    max_tokens: 2000,
+    temperature: 0.3
+  });
+  
+  return notesResponse.choices[0].message.content;
+}
+
+// Enhanced Q&A generation for classroom content
+async function generateClassroomQnA(filteredContent) {
+  const qnaResponse = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert educator creating study questions. Generate 5-10 relevant questions and answers that:\n\n1. TEST understanding of key concepts taught\n2. COVER important topics and learning objectives\n3. INCLUDE both factual and analytical questions\n4. PROVIDE clear, educational answers\n5. FOCUS on the main educational content\n6. REMOVE any questions about irrelevant or noisy content\n7. IMPORTANT: Always respond in English, regardless of input language\n8. TRANSLATE any non-English content to English while preserving meaning\n\nFormat as Q: [question] A: [answer]"
+      },
+      {
+        role: "user",
+        content: filteredContent
+      }
+    ],
+    max_tokens: 1500,
+    temperature: 0.3
+  });
+  
+  return qnaResponse.choices[0].message.content;
+}
+
+// CORS configuration for mobile compatibility
+app.use(cors({
+  origin: true, // Allow all origins for mobile access
+  credentials: true
+}));
+
+// Additional headers for mobile compatibility
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  if (req.method === "OPTIONS") {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
+// Middleware
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Configure multer for file uploads with increased limits
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = 'uploads';
+    fs.ensureDirSync(uploadDir);
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `audio-${Date.now()}-${Math.floor(Math.random() * 1000000000)}.webm`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'audio/webm' || file.mimetype === 'audio/wav' || file.mimetype === 'audio/mp3') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed!'), false);
+    }
+  }
 });
 
 // Health check endpoint
@@ -257,218 +183,232 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    features: {
+      classroomNoiseHandling: true,
+      audioPreprocessing: true,
+      enhancedContentFiltering: true
+    }
   });
 });
 
-// Get user profile
-app.get('/api/profile', requireAuth, (req, res) => {
-  res.json({
-    id: req.user.id,
-    name: req.user.name,
-    email: req.user.email,
-    picture: req.user.picture
-  });
-});
+// Auth routes
+app.post('/api/auth/register', register);
+app.post('/api/auth/login', login);
+app.get('/api/auth/profile', requireAuth, getProfile);
 
-// Get all lectures for authenticated user
+// Get user's lectures
 app.get('/api/lectures', requireAuth, async (req, res) => {
   try {
     const lectures = await db.getLecturesByUserId(req.user.id);
     res.json(lectures);
   } catch (error) {
     console.error('Error fetching lectures:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to fetch lectures' });
   }
 });
 
-// Get specific lecture (user must own it)
+// Get specific lecture
 app.get('/api/lectures/:id', requireAuth, async (req, res) => {
   try {
-    const { id } = req.params;
-    const lecture = await db.getLectureById(id, req.user.id);
+    const lecture = await db.getLectureById(req.params.id, req.user.id);
     if (!lecture) {
-      res.status(404).json({ error: 'Lecture not found' });
-      return;
+      return res.status(404).json({ error: 'Lecture not found' });
     }
     res.json(lecture);
   } catch (error) {
     console.error('Error fetching lecture:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to fetch lecture' });
   }
 });
 
-// Enhanced upload and process audio for long lectures
+// Update lecture
+app.put('/api/lectures/:id', requireAuth, async (req, res) => {
+  try {
+    const { title, notes } = req.body;
+    const lecture = await db.updateLecture(req.params.id, req.user.id, { title, notes });
+    if (!lecture) {
+      return res.status(404).json({ error: 'Lecture not found' });
+    }
+    res.json(lecture);
+  } catch (error) {
+    console.error('Error updating lecture:', error);
+    res.status(500).json({ error: 'Failed to update lecture' });
+  }
+});
+
+// Delete lecture
+app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
+  try {
+    const lecture = await db.getLectureById(req.params.id, req.user.id);
+    
+    if (!lecture) {
+      return res.status(404).json({ error: 'Lecture not found' });
+    }
+    
+    // Check if user owns this lecture
+    if (lecture.user_id !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    await db.deleteLecture(req.params.id);
+    res.json({ message: 'Lecture deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting lecture:', error);
+    res.status(500).json({ error: 'Failed to delete lecture' });
+  }
+});
+
+// Enhanced upload and process audio with classroom noise handling
 app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No audio file uploaded' });
+      return res.status(400).json({ error: 'No audio file provided' });
     }
 
-    const { title } = req.body;
-    const lectureId = uuidv4();
     const audioPath = req.file.path;
+    const title = req.body.title || 'Untitled Lecture';
+    const lectureId = uuidv4();
 
-    console.log('Processing audio file:', audioPath);
+    console.log(`Processing audio file: ${audioPath}`);
 
-    // Get audio duration
-    const duration = await getAudioDuration(audioPath);
-    console.log(`Audio duration: ${Math.round(duration / 60)} minutes`);
+    // Enhanced audio preprocessing for classroom environments
+    console.log("🔧 Preprocessing audio for classroom noise reduction...");
+    const processedAudioPath = await preprocessAudioForClassroom(audioPath);
 
-    let transcription, filteredContent;
+    // Get audio duration using ffmpeg (use processed audio)
+    const duration = await new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(processedAudioPath, (err, metadata) => {
+        if (err) reject(err);
+        else resolve(Math.floor(metadata.format.duration));
+      });
+    });
 
-    // Check if audio is longer than 10 minutes (600 seconds)
-    if (duration > 600) {
-      console.log('Long lecture detected, using chunking approach...');
+    console.log(`Audio duration: ${Math.floor(duration / 60)} minutes`);
+
+    let transcription;
+    let filteredContent;
+
+    if (duration > 600) { // Long lecture (more than 10 minutes)
+      console.log('Long lecture detected, using chunking...');
       
-      // Create temporary directory for chunks
-      const chunksDir = path.join(path.dirname(audioPath), `chunks_${lectureId}`);
+      // Create chunks directory
+      const chunksDir = path.join(__dirname, 'chunks');
       await fs.ensureDir(chunksDir);
       
-      try {
-        // Split audio into 10-minute chunks
-        const chunkPaths = await splitAudioIntoChunks(audioPath, chunksDir, 10);
-        console.log(`Split into ${chunkPaths.length} chunks`);
+      // Split audio into 10-minute chunks
+      const chunkDuration = 600; // 10 minutes in seconds
+      const totalChunks = Math.ceil(duration / chunkDuration);
+      
+      console.log(`Splitting into ${totalChunks} chunks...`);
+      
+      const chunkPromises = [];
+      for (let i = 0; i < totalChunks; i++) {
+        const startTime = i * chunkDuration;
+        const chunkPath = path.join(chunksDir, `chunk_${i}.webm`);
         
-        // Process all chunks
-        const chunkResults = await processAudioChunks(chunkPaths, lectureId);
-        transcription = chunkResults.fullTranscription;
-        filteredContent = chunkResults.fullFilteredContent;
-        
-        // Clean up chunks directory
-        fs.remove(chunksDir).catch(console.error);
-        
-      } catch (chunkError) {
-        console.error('Error processing chunks:', chunkError);
-        // Fallback to single file processing
-        console.log('Falling back to single file processing...');
-        
-        const transcriptionResult = await openai.audio.transcriptions.create({
-          file: fs.createReadStream(audioPath),
-          model: "whisper-1",
-          language: "en"
+        const chunkPromise = new Promise((resolve, reject) => {
+          ffmpeg(processedAudioPath)
+            .seekInput(startTime)
+            .duration(chunkDuration)
+            .output(chunkPath)
+            .on('end', () => resolve({ path: chunkPath, index: i }))
+            .on('error', reject)
+            .run();
         });
         
-        transcription = transcriptionResult.text;
-        
-        const filterResponse = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert academic content filter. Extract ONLY educational and academic content from lecture transcriptions. Remove jokes, casual conversations, off-topic discussions, personal anecdotes, administrative announcements, technical difficulties, and informal banter. Preserve educational flow and maintain context, focusing on academic concepts, explanations, examples, definitions, theories, and educational discussions."
-            },
-            {
-              role: "user",
-              content: `Please filter this lecture transcription to contain ONLY academic and educational content:\n\n${transcription}`
-            }
-          ],
-          max_tokens: 2000,
-          temperature: 0.2
-        });
-        
-        filteredContent = filterResponse.choices[0].message.content;
+        chunkPromises.push(chunkPromise);
       }
-    } else {
+      
+      const chunks = await Promise.all(chunkPromises);
+      console.log(`Created ${chunks.length} chunks`);
+      
+      // Process each chunk
+      const chunkResults = [];
+      for (const chunk of chunks) {
+        console.log(`Processing chunk ${chunk.index + 1}/${chunks.length}...`);
+        
+        try {
+          const audioBuffer = await fs.readFile(chunk.path);
+          const transcriptionResult = await openai.audio.transcriptions.create({
+            file: new File([audioBuffer], `chunk_${chunk.index}.webm`, { type: 'audio/webm' }),
+            model: 'whisper-1',
+          });
+          
+          chunkResults.push({
+            index: chunk.index,
+            transcription: transcriptionResult.text
+          });
+          
+          console.log(`Chunk ${chunk.index + 1} transcribed successfully`);
+        } catch (error) {
+          console.error(`Error processing chunk ${chunk.index + 1}:`, error);
+          chunkResults.push({
+            index: chunk.index,
+            transcription: ''
+          });
+        }
+      }
+      
+      // Combine all transcriptions
+      const sortedResults = chunkResults.sort((a, b) => a.index - b.index);
+      const fullTranscription = sortedResults.map(r => r.transcription).join(' ');
+      
+      console.log('Full transcription completed');
+      
+      // Enhanced classroom content filtering for the full transcription
+      console.log("🎓 Applying enhanced classroom content filtering...");
+      filteredContent = await filterClassroomContent(fullTranscription);
+      console.log("Enhanced classroom content filtering completed");
+      
+      transcription = fullTranscription;
+      
+      // Clean up chunks
+      await fs.remove(chunksDir);
+      
+    } else { // Short lecture
       console.log('Short lecture, using standard processing...');
       
-      // Standard processing for shorter audio
+      // Transcribe processed audio
+      const audioBuffer = await fs.readFile(processedAudioPath);
       const transcriptionResult = await openai.audio.transcriptions.create({
-        file: fs.createReadStream(audioPath),
-        model: "whisper-1",
-        language: "en"
+        file: new File([audioBuffer], req.file.filename, { type: 'audio/webm' }),
+        model: 'whisper-1',
       });
       
       transcription = transcriptionResult.text;
+      console.log('Transcription completed');
       
-      const filterResponse = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert academic content filter. Extract ONLY educational and academic content from lecture transcriptions. Remove jokes, casual conversations, off-topic discussions, personal anecdotes, administrative announcements, technical difficulties, and informal banter. Preserve educational flow and maintain context, focusing on academic concepts, explanations, examples, definitions, theories, and educational discussions."
-          },
-          {
-            role: "user",
-            content: `Please filter this lecture transcription to contain ONLY academic and educational content:\n\n${transcription}`
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.2
-      });
-      
-      filteredContent = filterResponse.choices[0].message.content;
+      // Enhanced classroom content filtering
+      console.log("🎓 Applying enhanced classroom content filtering...");
+      filteredContent = await filterClassroomContent(transcription);
+      console.log("Enhanced classroom content filtering completed");
     }
 
-    console.log('Transcription completed');
-    console.log('Content filtering completed');
+    // Generate enhanced classroom summary
+    console.log("📝 Generating enhanced classroom summary...");
+    const summary = await generateClassroomSummary(filteredContent);
+    console.log('Enhanced classroom summary generation completed');
 
-    // Generate summary using filtered content
-    const summaryResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert at creating concise, informative summaries of academic lectures. Create a professional summary that captures the main educational topics, key academic concepts, theories, and important learning objectives. Focus on what students need to understand and remember for their studies."
-        },
-        {
-          role: "user",
-          content: `Please create a comprehensive academic summary of this filtered lecture content:\n\n${filteredContent}`
-        }
-      ],
-      max_tokens: 1000,
-      temperature: 0.3
-    });
+    // Generate enhanced classroom notes
+    console.log("📚 Generating enhanced classroom notes...");
+    const notes = await generateClassroomNotes(filteredContent);
+    console.log('Enhanced classroom notes generation completed');
 
-    // Generate structured academic notes using filtered content
-    const notesResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert academic note-taker specializing in creating study-ready notes for students. Create clear, well-organized academic notes using simple text formatting. Use dashes (-) for lists, plain text for section titles, simple line breaks for organization, and standard punctuation. No markdown formatting whatsoever. Focus on key academic concepts, definitions, theories, formulas, examples, and important details that students need for studying and exams. Structure the notes logically with main topics, subtopics, and supporting details."
-        },
-        {
-          role: "user",
-          content: `Please create detailed, well-structured academic notes from this filtered lecture content:\n\n${filteredContent}`
-        }
-      ],
-      max_tokens: 1500,
-      temperature: 0.3
-    });
+    // Generate enhanced classroom Q&A
+    console.log("❓ Generating enhanced classroom Q&A...");
+    const qna = await generateClassroomQnA(filteredContent);
+    console.log('Enhanced classroom Q&A generation completed');
 
-    // Generate Q&A using filtered content
-    const qaResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert educator who creates comprehensive study questions and answers from academic content. Generate important questions that test understanding of key concepts, definitions, theories, and practical applications. Format each Q&A as 'Q: [question]' followed by 'A: [detailed answer]' on the next line. Create questions that would help students prepare for exams, covering main topics, important details, and critical thinking aspects. Include different types of questions: factual, conceptual, analytical, and application-based. Make answers detailed and educational."
-        },
-        {
-          role: "user",
-          content: `Please create comprehensive study questions and answers from this lecture content. Generate 8-12 important questions that cover the main topics and key concepts:\n\n${filteredContent}`
-        }
-      ],
-      max_tokens: 2000,
-      temperature: 0.3
-    });
-
-    const summary = summaryResponse.choices[0].message.content;
-    const notes = notesResponse.choices[0].message.content;
-    const qna = qaResponse.choices[0].message.content;
-    console.log('Q&A generation completed');
-
-    // Save to database with user ID (including filtered content and Q&A)
+    // Save to database
     const newLecture = {
       id: lectureId,
       user_id: req.user.id,
-      title: title || 'Untitled Lecture',
+      title: title,
       transcription: transcription,
       filtered_content: filteredContent,
-      summary,
-      notes,
-      qna,
+      summary: summary,
+      notes: notes,
+      qna: qna,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -476,85 +416,52 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
     await db.createLecture(newLecture);
     console.log('Lecture saved to database successfully');
 
-    // Clean up uploaded file
-    fs.remove(audioPath).catch(console.error);
+    // Clean up processed audio file
+    if (processedAudioPath !== audioPath) {
+      await fs.remove(processedAudioPath);
+    }
 
-    res.json(newLecture);
+    res.json({
+      id: lectureId,
+      title: title,
+      message: 'Audio processed successfully with enhanced classroom noise handling',
+      features: {
+        audioPreprocessing: true,
+        classroomNoiseFiltering: true,
+        enhancedContentExtraction: true
+      }
+    });
+
   } catch (error) {
     console.error('Error processing audio:', error);
-    
-    // Clean up uploaded file on error
-    if (req.file) {
-      fs.remove(req.file.path).catch(console.error);
-    }
-    
-    // More specific error messages
-    let errorMessage = 'Failed to process audio';
-    if (error.message.includes('timeout')) {
-      errorMessage = 'Audio processing timed out. Please try a shorter recording.';
-    } else if (error.message.includes('API key')) {
-      errorMessage = 'API configuration error. Please contact support.';
-    } else if (error.message.includes('file size')) {
-      errorMessage = 'File too large. Please compress your audio or use a shorter recording.';
-    }
-    
-    res.status(500).json({ error: errorMessage });
-  }
-});
-
-// Update lecture endpoint
-app.put('/api/lectures/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, summary, notes } = req.body;
-    
-    const updatedLecture = await db.updateLecture(id, req.user.id, {
-      title,
-      summary,
-      notes,
-      updated_at: new Date().toISOString()
+    res.status(500).json({ 
+      error: 'Failed to process audio. Please try again.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
-    
-    if (!updatedLecture) {
-      return res.status(404).json({ error: 'Lecture not found' });
-    }
-    
-    res.json(updatedLecture);
-  } catch (error) {
-    console.error('Error updating lecture:', error);
-    res.status(500).json({ error: error.message });
   }
 });
 
-// Delete lecture endpoint
-app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const success = await db.deleteLecture(id, req.user.id);
-    
-    if (!success) {
-      return res.status(404).json({ error: 'Lecture not found' });
-    }
-    
-    res.json({ message: 'Lecture deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting lecture:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Serve React app for all other routes (SPA)
-app.get('*', (req, res) => {
-  if (process.env.NODE_ENV === 'production') {
+// Serve static files from React build in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/build/index.html'));
-  } else {
-    res.redirect('http://localhost:3000');
-  }
-});
+  });
+}
 
-// Start server
 app.listen(PORT, () => {
+  console.log(`🚀 Enhanced AI Notetaker Platform with Classroom Noise Handling`);
+  console.log(`✅ Firebase Firestore initialized for development`);
   console.log(`Server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
-  console.log(`Google OAuth: http://localhost:${PORT}/auth/google`);
+  console.log(`Register: http://localhost:${PORT}/api/auth/register`);
+  console.log(`Login: http://localhost:${PORT}/api/auth/login`);
+  console.log(`🎓 Enhanced Features:`);
+  console.log(`   - Classroom noise reduction`);
+  console.log(`   - Audio preprocessing`);
+  console.log(`   - Enhanced content filtering`);
+  console.log(`   - Educational content focus`);
 });
+
+module.exports = app;
