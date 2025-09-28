@@ -1,0 +1,634 @@
+{
+  "exportDate": "2025-09-28T05:42:30.664Z",
+  "users": [
+    {
+      "id": "114167186535229964948",
+      "google_id": "114167186535229964948",
+      "email": "akkshatt7@gmail.com",
+      "name": "Akkshatt",
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocL211Rbz3P0AoiEu1OvqOOJ8OnBPTRM3Z0cpdkDuyNRv7WlIQ=s96-c",
+      "created_at": {
+        "_seconds": 1758565376,
+        "_nanoseconds": 653000000
+      }
+    },
+    {
+      "id": "3ASQgf0QFrk68mmSXBSj",
+      "name": "sanjana",
+      "email": "sanjana@123",
+      "password": "$2b$10$j6RI2fCn1vBHmPfKbdG7KevSEkUtQGICdeU6ZWPIGVsMCsHS5jOm.",
+      "created_at": {
+        "_seconds": 1758648844,
+        "_nanoseconds": 149000000
+      }
+    },
+    {
+      "id": "78WZ5cnDvVMaphEYxnTx",
+      "name": "Akkshatt",
+      "email": "akkshatt@123",
+      "password": "$2b$10$VfMNEhMGprCJmPzvdYN8zeHKDnafDNqPZsBERRM/D5YslUu72.nae",
+      "created_at": {
+        "_seconds": 1758648450,
+        "_nanoseconds": 168000000
+      }
+    },
+    {
+      "id": "94xp24GqPEtU1lO8WRUO",
+      "name": "Akkshatt",
+      "email": "Yogendra_kumar58@yahoo.com",
+      "password": "$2b$10$JfTkNNnisbMkVph0AF4rFO3BJqILgoz4ZuEnKCvufy1p.QY6rrL/.",
+      "created_at": {
+        "_seconds": 1758644300,
+        "_nanoseconds": 38000000
+      }
+    },
+    {
+      "id": "AS1INJlKRFstU14bN9dz",
+      "name": "Fresh User",
+      "email": "fresh@example.com",
+      "password": "$2b$10$..KvhZWcQObV/eL3/YZQg.sX4mtEwqqJe48UJ75bHW6W6mNnJNhDi",
+      "created_at": {
+        "_seconds": 1758643784,
+        "_nanoseconds": 354000000
+      }
+    },
+    {
+      "id": "BSDodfkvY7DRR1oFvx0g",
+      "name": "Animesh Gupta",
+      "email": "animeshmohak@gmail.com",
+      "password": "$2b$10$Q1oW/wjDnmxg.o6/9CjnSOmJE50KHwHjRo15q6JHFp72y9QH7ZYZe",
+      "created_at": {
+        "_seconds": 1759004597,
+        "_nanoseconds": 492000000
+      }
+    },
+    {
+      "id": "CXw4joEiqpavLcNKbVSl",
+      "name": "Test User 2",
+      "email": "test2@example.com",
+      "password": "$2b$10$H53l7PMONW9DmYeYQllylu0vWCELdfaWvIFdktB85Cma1.CKbDGG6",
+      "created_at": {
+        "_seconds": 1758567445,
+        "_nanoseconds": 928000000
+      }
+    },
+    {
+      "id": "E0S9h17SHgfvm2FaC8Lh",
+      "name": "Akkshatt Shah",
+      "email": "akkshatt.24306@sscbs.du.ac.in",
+      "password": "$2b$10$UGsvGXiu5rSY9PiXghHaOu7l.XQ6j6I6Re8lfoqMZHaczLuUlqbNa",
+      "created_at": {
+        "_seconds": 1759004367,
+        "_nanoseconds": 775000000
+      }
+    },
+    {
+      "id": "EU2jSGiqIMA7RXmLGfbz",
+      "name": "Test User 3",
+      "email": "test3@example.com",
+      "password": "$2b$10$iOIBdwJqoBQ5M5qFAz51bebtGipoyYNo/bCD9KVtdo60vmkoYB1Ve",
+      "created_at": {
+        "_seconds": 1758567697,
+        "_nanoseconds": 198000000
+      }
+    },
+    {
+      "id": "EvkNxWQaN9WxzN9YwRR1",
+      "name": "trilion",
+      "email": "jyotiyogendra@gmail.com",
+      "password": "$2b$10$m0010Om23OlvXXCYqEPxOOorMfP.BpIENVG2IPdsaM5QyvvvaBcc.",
+      "created_at": {
+        "_seconds": 1758567556,
+        "_nanoseconds": 460000000
+      }
+    },
+    {
+      "id": "JqdSBkz9Q6KKkNxgCvx0",
+      "name": "dfeve",
+      "email": "tefoxag459@anysilo.com",
+      "password": "$2b$10$GJSwhn3fShkt1Bk/w9kzWOYeyeHniC1hKwAYbd0eJs26ltxgU28oK",
+      "created_at": {
+        "_seconds": 1758569550,
+        "_nanoseconds": 846000000
+      }
+    },
+    {
+      "id": "T7VO2fKptaTzEVwupLpeHfGdJen1",
+      "name": "Akkshatt",
+      "profilePicture": "https://lh3.googleusercontent.com/a/ACg8ocL211Rbz3P0AoiEu1OvqOOJ8OnBPTRM3Z0cpdkDuyNRv7WlIQ=s96-c",
+      "role": "student",
+      "email": "akkshatt7@gmail.com",
+      "createdAt": {
+        "_seconds": 1758399244,
+        "_nanoseconds": 419000000
+      },
+      "lastActive": {
+        "_seconds": 1758442140,
+        "_nanoseconds": 321000000
+      }
+    },
+    {
+      "id": "WuSascAcjWHjSrswWXuo",
+      "name": "Akkshatt",
+      "email": "sofabi4380@dawhe.com",
+      "password": "$2b$10$VvKvKchJGPYBD.cs8RE93O.qXlQXXCVZpIE2BTe//MUOgCKFNPZlK",
+      "created_at": {
+        "_seconds": 1758646261,
+        "_nanoseconds": 871000000
+      }
+    },
+    {
+      "id": "ckIHxnxFdKDoAoyUoxK0",
+      "name": "Akkshatt",
+      "email": "dacinev193@etenx.com",
+      "password": "$2b$10$eQ4smqcYz4iu2koTPffTeeD61hbHA66yCNdDrbWq.IXtDtHx9LOZO",
+      "created_at": {
+        "_seconds": 1759001174,
+        "_nanoseconds": 958000000
+      }
+    },
+    {
+      "id": "e8RPiAG5GZerRmPqQ8Cu",
+      "name": "Test User 4",
+      "email": "test4@example.com",
+      "password": "$2b$10$P2ABhJ1Kelyh4p.zUE3aAuja654vyDlPrDZ3WprCwPs7TjYkEdnxi",
+      "created_at": {
+        "_seconds": 1758569607,
+        "_nanoseconds": 950000000
+      }
+    },
+    {
+      "id": "eJSbnvEdkymCVWmqdqkI",
+      "name": "Vihaan Gupta",
+      "email": "vihaangupta49@gmail.com",
+      "password": "$2b$10$j.h/g5hDb4wNsDi/v/edw.rLubc1A/XcOTwUWjbR0.fM.YCx/UCW6",
+      "created_at": {
+        "_seconds": 1759031460,
+        "_nanoseconds": 179000000
+      }
+    },
+    {
+      "id": "fcAZoy0gQGwpwwuKgwAq",
+      "name": "Akkshatt",
+      "email": "cidafo1412@hiepth.com",
+      "password": "$2b$10$H022L.PinKQqCQ6J4.FNJ.gALCUKmJDwhL9F0CZb/U23yBc7KPeYy",
+      "created_at": {
+        "_seconds": 1759034278,
+        "_nanoseconds": 84000000
+      }
+    },
+    {
+      "id": "klCeCZvS45IP5qyxyBdp",
+      "name": "Debug User",
+      "email": "debug@test.com",
+      "password": "$2b$10$FOIn2gs2Btl7/.1bnqlrGedy2dm6I4wMD5BBuT95wt8WrO9E17fvS",
+      "created_at": {
+        "_seconds": 1758645519,
+        "_nanoseconds": 66000000
+      }
+    },
+    {
+      "id": "qdbwjZRWC6eMG5AWO6PSj31eNlf1",
+      "profilePicture": "https://lh3.googleusercontent.com/a/ACg8ocKmoNeXDIsai86WutVAvqXQkYxeSKh_aEFGCV7Wo_3wh3mKfr5U=s96-c",
+      "name": "Akkshatt Shah",
+      "email": "shahakkshatt@gmail.com",
+      "role": "student",
+      "createdAt": {
+        "_seconds": 1758393008,
+        "_nanoseconds": 986000000
+      },
+      "lastActive": {
+        "_seconds": 1758432708,
+        "_nanoseconds": 882000000
+      }
+    },
+    {
+      "id": "rPFppak3uBKYIkqfsIpf",
+      "name": "Akkshatt",
+      "email": "sebesod464@bitfami.com",
+      "password": "$2b$10$ZvVelt9sblMdAEyYOEQ0iOJSrYK2h8/pcLVSiB2/Pyc.rBHMhsRLa",
+      "created_at": {
+        "_seconds": 1758643341,
+        "_nanoseconds": 976000000
+      }
+    },
+    {
+      "id": "zEWyup5Db9gKcx5hn6nn",
+      "name": "Test User",
+      "email": "test@example.com",
+      "password": "$2b$10$kWiWzoOvtkUuqk.C8Wdq6.47x7.cPW.4GMx9HN21MZRlY7LyptX4.",
+      "created_at": {
+        "_seconds": 1758567218,
+        "_nanoseconds": 193000000
+      }
+    },
+    {
+      "id": "zjemwyArO2zJF8WcGTjv",
+      "name": "Test User New",
+      "email": "test.new@example.com",
+      "password": "$2b$10$dcc60S3htJG.dV5Pjs4rTuzXujqQVMcaqLBXpnb3y48DeWN1WLbDa",
+      "created_at": {
+        "_seconds": 1758643279,
+        "_nanoseconds": 725000000
+      }
+    }
+  ],
+  "lectures": [
+    {
+      "id": "0c32495e-e522-4536-881e-0939dea32c4d",
+      "user_id": "WuSascAcjWHjSrswWXuo",
+      "title": "Untitled Lecture - Part 1",
+      "transcription": "The only function of a business is to understand the needs of a customer and cater to it. Anything other than that is just wasting money and resources.",
+      "filtered_content": "The primary function of a business is to identify and meet the needs of customers. This involves understanding customer preferences, demands, and expectations in order to provide products or services that satisfy them. By focusing on customer needs, businesses can create value, build customer loyalty, and achieve competitive advantage in the market. Failure to prioritize customer needs may result in inefficiencies, wasted resources, and missed opportunities for growth and success. Therefore, businesses should continuously strive to align their strategies, operations, and offerings with the evolving needs and preferences of their target customers.",
+      "summary": "In this lecture, the main focus is on the importance of businesses identifying and meeting the needs of customers. By understanding customer preferences, demands, and expectations, businesses can provide products or services that satisfy them, creating value, building customer loyalty, and gaining a competitive advantage. Failure to prioritize customer needs can lead to inefficiencies, wasted resources, and missed opportunities for growth. It is crucial for businesses to continuously align their strategies, operations, and offerings with the evolving needs and preferences of their target customers to ensure success in the market.",
+      "notes": "- Primary Function of a Business:\n  - Identify and meet the needs of customers\n  - Understanding customer preferences, demands, and expectations\n  - Provide products or services that satisfy customers\n\n- Importance of Focusing on Customer Needs:\n  - Create value for customers\n  - Build customer loyalty\n  - Achieve competitive advantage in the market\n\n- Consequences of Neglecting Customer Needs:\n  - Inefficiencies in business operations\n  - Wasted resources\n  - Missed opportunities for growth and success\n\n- Continuous Alignment with Customer Needs:\n  - Strive to align strategies, operations, and offerings\n  - Adapt to evolving needs and preferences of target customers\n\n- Key Takeaway:\n  - Prioritizing customer needs is essential for business success\n  - Businesses should focus on understanding and meeting customer expectations to thrive in the market.",
+      "qna": "Q: What is the primary function of a business according to the lecture content?\nA: The primary function of a business is to identify and meet the needs of customers.\n\nQ: How can understanding customer preferences, demands, and expectations benefit a business?\nA: Understanding customer preferences, demands, and expectations can help a business provide products or services that satisfy customers, create value, build customer loyalty, and achieve competitive advantage in the market.\n\nQ: What are some consequences of failing to prioritize customer needs in a business?\nA: Failure to prioritize customer needs may result in inefficiencies, wasted resources, and missed opportunities for growth and success.\n\nQ: Why is it important for businesses to continuously align their strategies, operations, and offerings with customer needs?\nA: It is important for businesses to continuously align their strategies, operations, and offerings with customer needs to remain competitive, create value, and sustain customer loyalty.\n\nQ: How can businesses identify the evolving needs and preferences of their target customers?\nA: Businesses can identify the evolving needs and preferences of their target customers through market research, customer feedback, data analysis, and monitoring industry trends.\n\nQ: Explain how focusing on customer needs can help a business create value.\nA: Focusing on customer needs helps a business create value by delivering products or services that address specific customer requirements, leading to customer satisfaction and loyalty.\n\nQ: How does meeting customer needs contribute to building customer loyalty?\nA: Meeting customer needs consistently builds trust, satisfaction, and positive experiences, which in turn fosters customer loyalty and repeat business.\n\nQ: In what ways can businesses achieve competitive advantage by prioritizing customer needs?\nA: By prioritizing customer needs, businesses can differentiate themselves from competitors, attract more customers, increase market share, and enhance their reputation in the industry.\n\nQ: Provide examples of strategies that businesses can use to align their operations with customer needs.\nA: Strategies that businesses can use to align their operations with customer needs include personalized marketing campaigns, product customization options, efficient customer service processes, and continuous product improvement based on feedback.\n\nQ: How can businesses measure the effectiveness of their efforts in meeting customer needs?\nA: Businesses can measure the effectiveness of their efforts in meeting customer needs through customer satisfaction surveys, Net Promoter Scores (NPS), customer retention rates, sales data analysis, and feedback mechanisms integrated into products or services.",
+      "updated_at": {
+        "_seconds": 1758646307,
+        "_nanoseconds": 140000000
+      },
+      "created_at": {
+        "_seconds": 1758646307,
+        "_nanoseconds": 140000000
+      }
+    },
+    {
+      "id": "0e17a5bd-3b5e-4196-90aa-79225c61968a",
+      "user_id": "JqdSBkz9Q6KKkNxgCvx0",
+      "title": "Untitled Lecture - Part 1",
+      "transcription": "This video is a derivative decision of A savory cheese from Kazan arrives Japan.",
+      "filtered_content": "I'm sorry, but the provided text does not contain any academic or educational content to filter. If you can provide a different excerpt or specific content related to a lecture or academic topic, I can assist in extracting the educational information from it.",
+      "summary": "Certainly! Please provide me with the lecture content or academic topic you would like summarized, and I will create a comprehensive academic summary focusing on the main educational topics, key concepts, theories, and learning objectives.",
+      "notes": "I'm sorry, but the provided text does not contain any academic or educational content to filter. If you can provide a different excerpt or specific content related to a lecture or academic topic, I can assist in extracting the educational information from it.",
+      "qna": "Certainly! Let's consider a lecture on the topic of \"The Industrial Revolution.\" Here are some study questions based on key concepts and main topics:\n\nQ: What were the main factors that led to the Industrial Revolution?\nA: The main factors that led to the Industrial Revolution included technological advancements, the availability of natural resources, a growing population, and the rise of capitalism.\n\nQ: Describe the impact of the steam engine on the Industrial Revolution.\nA: The steam engine revolutionized transportation and manufacturing by providing a more efficient and reliable source of power, leading to the mechanization of various industries.\n\nQ: How did urbanization contribute to the Industrial Revolution?\nA: Urbanization occurred as people moved from rural areas to cities in search of employment in factories, leading to the growth of industrial centers and the development of urban infrastructure.\n\nQ: Explain the concept of division of labor and its significance during the Industrial Revolution.\nA: The division of labor involved breaking down production processes into specialized tasks, increasing efficiency and productivity in factories during the Industrial Revolution.\n\nQ: Discuss the social impacts of the Industrial Revolution on the working class.\nA: The Industrial Revolution led to poor working conditions, long hours, low wages, and child labor for many in the working class, sparking movements for labor rights and improved working conditions.\n\nQ: How did the Industrial Revolution impact global trade and imperialism?\nA: The Industrial Revolution fueled the demand for raw materials from colonies, leading to increased global trade and the expansion of imperial powers in search of resources and markets.\n\nQ: Compare and contrast the First Industrial Revolution with the Second Industrial Revolution.\nA: The First Industrial Revolution (late 18th to early 19th century) focused on mechanization and steam power, while the Second Industrial Revolution (late 19th to early 20th century) introduced electricity, steel, and mass production techniques.\n\nQ: Analyze the role of women in the workforce during the Industrial Revolution.\nA: Women played a significant role in the workforce during the Industrial Revolution, often working in textile mills and factories, although they faced lower wages and limited opportunities for advancement compared to men.\n\nQ: How did the Industrial Revolution impact the environment and lead to the rise of environmental movements?\nA: The Industrial Revolution led to pollution, deforestation, and resource depletion, prompting the rise of environmental movements advocating for sustainable practices and conservation efforts.\n\nThese questions cover a range of topics related to the Industrial Revolution, testing students' understanding of historical context, technological advancements, social impacts, economic changes, and environmental consequences.",
+      "updated_at": {
+        "_seconds": 1758570945,
+        "_nanoseconds": 544000000
+      },
+      "created_at": {
+        "_seconds": 1758570945,
+        "_nanoseconds": 544000000
+      }
+    },
+    {
+      "id": "1ae4598c-242e-45ac-a216-841e59d8d63f",
+      "user_id": "JqdSBkz9Q6KKkNxgCvx0",
+      "title": "Untitled Lecture",
+      "transcription": "This video is a derivative decision of A savory cheese from Kazan arrives Japan.\n\n",
+      "filtered_content": "I'm sorry, but the provided text does not contain any academic or educational content to filter. If you can provide a different excerpt or specific content related to a lecture or academic topic, I can assist in extracting the educational information from it.\n\n",
+      "summary": "Certainly! Please provide the academic content or lecture topic you would like me to summarize.",
+      "notes": "I'm sorry, but the provided text does not contain any academic or educational content to filter. If you can provide a different excerpt or specific content related to a lecture or academic topic, I can assist in extracting the educational information from it.",
+      "qna": "Certainly! Let's consider a topic related to psychology for our study questions. Here are some questions based on the concept of classical conditioning:\n\nQ: What is classical conditioning?\nA: Classical conditioning is a type of learning in which a neutral stimulus comes to elicit a response after being paired with a stimulus that naturally elicits that response.\n\nQ: Who is the psychologist known for pioneering classical conditioning?\nA: Ivan Pavlov, a Russian physiologist, is known for his experiments with dogs that led to the development of classical conditioning theory.\n\nQ: Explain the process of classical conditioning using an example.\nA: In classical conditioning, an unconditioned stimulus (UCS) that naturally triggers a response (unconditioned response - UCR) is paired with a neutral stimulus (NS). After repeated pairings, the neutral stimulus becomes a conditioned stimulus (CS) that elicits a conditioned response (CR) similar to the original response.\n\nQ: What is the difference between the UCS and the CS in classical conditioning?\nA: The unconditioned stimulus (UCS) naturally triggers a response without prior learning, while the conditioned stimulus (CS) is a previously neutral stimulus that, through association with the UCS, comes to elicit a conditioned response.\n\nQ: How does extinction occur in classical conditioning?\nA: Extinction in classical conditioning happens when the conditioned stimulus (CS) is presented repeatedly without the unconditioned stimulus (UCS), leading to a weakening and eventual disappearance of the conditioned response (CR).\n\nQ: What is spontaneous recovery in classical conditioning?\nA: Spontaneous recovery refers to the reappearance of a previously extinguished conditioned response (CR) after a period of rest or time without further conditioning.\n\nQ: How does generalization occur in classical conditioning?\nA: Generalization in classical conditioning happens when a conditioned response (CR) is elicited not only by the original conditioned stimulus (CS) but also by similar stimuli that resemble the CS.\n\nQ: Provide an example of discrimination in classical conditioning.\nA: Discrimination in classical conditioning occurs when an organism learns to respond to a specific conditioned stimulus (CS) but not to other similar stimuli. For instance, a dog might salivate to a bell of a certain tone but not to bells of different tones.",
+      "updated_at": {
+        "_seconds": 1758570951,
+        "_nanoseconds": 174000000
+      },
+      "created_at": {
+        "_seconds": 1758570951,
+        "_nanoseconds": 174000000
+      }
+    },
+    {
+      "id": "36a1cf77-6c36-4d4a-b2b4-1e64ff168c8f",
+      "user_id": "rPFppak3uBKYIkqfsIpf",
+      "title": "Untitled Lecture",
+      "transcription": "Thank you for watching.",
+      "filtered_content": "",
+      "summary": "Without the context of the lecture content, I'm unable to provide a comprehensive summary. Please provide the details of the lecture for me to summarize.",
+      "notes": "Lecture Content: \n\nThe lecture is about the principles of Marketing and its importance in business. The professor discussed the four P's of marketing, the marketing mix, and the role of marketing in the business world. He also touched on the importance of understanding consumer behavior and the process of market segmentation, targeting, and positioning. \n\n---\n\nLecture Notes:\n\n**I. Introduction to Marketing**\n\n- Definition: Marketing is the process of creating, communicating, delivering, and exchanging offerings that have value for customers, clients, partners, and society at large.\n\n**II. The Four P's of Marketing**\n\n- Product: The goods or services that a business offers to its customers.\n- Price: The amount of money that customers have to pay to obtain the product.\n- Place: The locations or platforms where the product is available for purchase.\n- Promotion: The methods used to communicate the features and benefits of the product to the target market.\n\n**III. The Marketing Mix**\n\n- The combination of the four P's of marketing to meet the needs of a specific target market.\n- The marketing mix should be balanced and cohesive to effectively reach the target audience.\n\n**IV. Role of Marketing in Business**\n\n- Marketing helps businesses understand the needs and wants of their customers.\n- It aids in the development of new products and services.\n- It helps businesses differentiate themselves from their competitors.\n- Marketing drives sales and growth.\n\n**V. Understanding Consumer Behavior**\n\n- Consumer behavior is the study of how individuals make decisions to spend their available resources on consumption-related items.\n- Understanding consumer behavior helps businesses make informed marketing decisions.\n\n**VI. Market Segmentation, Targeting, and Positioning**\n\n- Market Segmentation: The process of dividing a broad market into smaller, more manageable segments.\n- Targeting: The process of selecting the most promising market segments to enter.\n- Positioning: The process of establishing a distinctive place in the market for a product or a brand.\n- These processes help businesses tailor their marketing efforts to the most relevant and profitable customer groups. \n\n**VII. Conclusion**\n\n- Marketing is a crucial aspect of business that helps in understanding customer needs, developing suitable products and services, and driving business growth.\n- The four P's of marketing, the marketing mix, and the understanding of consumer behavior are essential tools in effective marketing.\n- Market segmentation, targeting, and positioning are important processes that help businesses focus their marketing efforts for maximum impact and profitability.",
+      "qna": "Without the lecture content, I can't provide specific questions and answers. However, I can give you an example based on a hypothetical lecture about climate change.\n\nQ: What is the greenhouse effect?\nA: The greenhouse effect is a natural process that warms the Earth’s surface. When the Sun’s energy reaches the Earth’s atmosphere, some of it is reflected back to space and the rest is absorbed and re-radiated by greenhouse gases.\n\nQ: What are the main greenhouse gases?\nA: The main greenhouse gases are carbon dioxide (CO2), methane (CH4), nitrous oxide (N2O), and fluorinated gases.\n\nQ: How does human activity contribute to climate change?\nA: Human activities contribute to climate change by causing changes in Earth’s atmosphere in the amounts of greenhouse gases, aerosols (small particles), and cloudiness. The largest known contribution comes from the burning of fossil fuels, which releases carbon dioxide gas to the atmosphere.\n\nQ: What are some impacts of climate change?\nA: Climate change impacts include increased temperature, extreme weather events, sea level rise, and changes in rainfall patterns. These can lead to droughts, floods, and other natural disasters.\n\nQ: What is the difference between climate change mitigation and adaptation?\nA: Mitigation addresses the root causes of climate change, by reducing greenhouse gas emissions, while adaptation seeks to lower the risks posed by the consequences of climatic changes.\n\nQ: How can we mitigate climate change?\nA: We can mitigate climate change by reducing our greenhouse gas emissions. This can be done by switching to renewable energy sources, improving energy efficiency, and changing our consumption and lifestyle habits.\n\nQ: What is the role of renewable energy in mitigating climate change?\nA: Renewable energy sources like wind, solar, and hydro power do not emit greenhouse gases once they are up and running. Therefore, they can play a key role in reducing our overall greenhouse gas emissions and mitigating climate change.",
+      "updated_at": {
+        "_seconds": 1758654123,
+        "_nanoseconds": 67000000
+      },
+      "created_at": {
+        "_seconds": 1758654123,
+        "_nanoseconds": 67000000
+      }
+    },
+    {
+      "id": "3a5c9389-5f98-4e37-992f-f01594e5cdb1",
+      "user_id": "114167186535229964948",
+      "title": "Untitled Lecture - Part 1",
+      "transcription": "Kids, it is very important to understand that business means that you understand the customer. What people will do is that they will think something in their mind that this can work, that can work. Actually, there is no need for that. People will keep thinking something in their mind and will keep making something out of it. That is not business. Business is asking the customer what he wants. And not even that. Because the customer doesn't know what he wants. You have to tell him what he wants. But how will he know when you go and ask him what his problem is? He knows his problem. He doesn't know the solution. He knows his problem. So you go, understand the problem, then make some solution and then ask him if he is willing to pay for it. If yes, then you have a business.",
+      "filtered_content": "Understanding the customer is crucial in business. Rather than assuming what customers want, it is essential to engage with them to identify their needs. Customers may know their problems but not necessarily the solutions. Businesses should focus on understanding customer problems, developing solutions, and validating them by asking if customers are willing to pay for the solution. This customer-centric approach is key to establishing a successful business.",
+      "summary": "Summary:\nThe lecture emphasizes the importance of understanding customers in business. It highlights the significance of engaging with customers to identify their needs instead of making assumptions. Customers may be aware of their problems but not the solutions, making it essential for businesses to focus on understanding these problems, developing solutions, and validating them by assessing customer willingness to pay. Adopting a customer-centric approach is crucial for building a successful business.",
+      "notes": "- Importance of Understanding the Customer in Business:\n  - Crucial for business success\n  - Avoid assuming customer needs\n  - Engage with customers to identify their needs\n\n- Customer Engagement and Needs Identification:\n  - Customers may know their problems but not solutions\n  - Businesses should focus on:\n    - Understanding customer problems\n    - Developing solutions\n    - Validating solutions by asking if customers are willing to pay\n\n- Customer-Centric Approach:\n  - Key to establishing a successful business\n  - Focus on meeting customer needs\n  - Validate solutions by customer willingness to pay\n\nExample:\n- Scenario:\n  - A business assumes a new product idea will be successful without consulting customers.\n- Outcome:\n  - Product fails in the market due to lack of customer interest.\n- Lesson:\n  - Importance of engaging with customers to understand their needs for business success.",
+      "qna": "Q: What is the importance of understanding the customer in business?\nA: Understanding the customer is crucial as it helps businesses identify customer needs, develop solutions, and ultimately establish a successful business by providing value to customers.\n\nQ: Why is it important for businesses to engage with customers rather than assuming their needs?\nA: Engaging with customers helps businesses gather accurate information about customer needs, preferences, and pain points, leading to the development of more relevant and successful solutions.\n\nQ: How can businesses identify customer problems effectively?\nA: Businesses can identify customer problems by actively listening to customer feedback, conducting surveys, analyzing market trends, and observing customer behavior.\n\nQ: What is the significance of developing solutions based on customer problems?\nA: Developing solutions based on customer problems ensures that the products or services offered by the business directly address the needs and challenges faced by customers, increasing the likelihood of success.\n\nQ: How can businesses validate their solutions with customers?\nA: Businesses can validate their solutions by seeking feedback from customers, conducting pilot tests, offering prototypes for evaluation, and asking customers if they would be willing to pay for the proposed solution.\n\nQ: What does it mean to have a customer-centric approach in business?\nA: A customer-centric approach in business means prioritizing customer needs, preferences, and feedback in all aspects of the business, from product development to marketing and customer service.\n\nQ: How does a customer-centric approach contribute to the success of a business?\nA: A customer-centric approach contributes to the success of a business by ensuring that products or services meet customer needs, fostering customer loyalty, increasing customer satisfaction, and driving business growth through positive word-of-mouth and repeat business.\n\nQ: What are some strategies businesses can use to better understand their customers?\nA: Businesses can use strategies such as conducting customer surveys, creating customer personas, analyzing customer data, implementing feedback mechanisms, and engaging in direct conversations with customers to better understand their needs and preferences.",
+      "updated_at": {
+        "_seconds": 1758565455,
+        "_nanoseconds": 818000000
+      },
+      "created_at": {
+        "_seconds": 1758565455,
+        "_nanoseconds": 818000000
+      }
+    },
+    {
+      "id": "3e3eeb2c-5abc-47f4-b8e9-9a0ed1e66fd5",
+      "user_id": "BSDodfkvY7DRR1oFvx0g",
+      "title": "How to record lecture ",
+      "transcription": "आपको पूरी माथ था कि आपने लेक्शर पर पड़ना जाने लगते हैं यहाँ हम आपके पीछे की ठीक है कि आप जाने की तरह पड़ने के लिए काम लागते हैं हम सीखेंगे कि एक फोन में इस वेबसाइट में हमारी ड्रिलियं नोट्स जाने जाने के लिए लेक्शर पर रिकोर्ड करेंगे सबसे पहले आपको उपर एक लेक्शर टाइटल लाना है, उप्शिनल है आपको सबसे पहले कैसे उपर इस वेबसाइट में हुस्स करना के लिए तो इतने तरहिश जाती है, मिकृफुन ढे वह एक कृपन लाउं करना चाहते हैं हम आप का मै के सारे शृ't रहने के लिए मुचार है हम",
+      "filtered_content": "The text is not coherent or meaningful in its current form, so it cannot be filtered for educational content.",
+      "summary": "As there is no lecture content provided, I'm unable to create a summary. Please provide the details of the lecture for me to proceed.",
+      "notes": "As there's no lecture content provided, I'm unable to create notes. Please provide the lecture details.",
+      "qna": "As there is no lecture content provided, I'm unable to create relevant questions and answers. Please provide the lecture content.",
+      "updated_at": {
+        "_seconds": 1759037022,
+        "_nanoseconds": 32000000
+      },
+      "created_at": {
+        "_seconds": 1759037022,
+        "_nanoseconds": 32000000
+      }
+    },
+    {
+      "id": "46d5ee2b-1664-4fa4-844f-aeeb79b60cb3",
+      "user_id": "JqdSBkz9Q6KKkNxgCvx0",
+      "title": "Untitled Lecture - Part 1",
+      "transcription": "The purpose of a business is to understand the customer and cater to their problems The fundamental mistake a lot of founders make is that",
+      "filtered_content": "The purpose of a business is to understand the customer and cater to their problems. The fundamental mistake a lot of founders make is that they focus too much on their product or service without truly understanding the needs and preferences of their target customers. It is essential for businesses to conduct market research, gather customer feedback, and analyze data to develop products or services that effectively address the pain points and desires of their target market. By prioritizing customer understanding and satisfaction, businesses can increase customer loyalty, drive sales, and achieve long-term success in the competitive marketplace.",
+      "summary": "The lecture emphasizes that the primary goal of a business is to comprehend and address customer needs effectively. Many founders often err by concentrating excessively on their offerings rather than understanding the requirements of their target audience. To succeed, businesses must engage in market research, collect customer feedback, and analyze data to create products or services that meet the specific needs and desires of their customer base. By prioritizing customer understanding and satisfaction, companies can enhance customer loyalty, boost sales, and attain sustained success in a competitive market environment.",
+      "notes": "- Purpose of a Business:\n  - Understand the customer and cater to their problems\n  - Fundamental Mistake:\n    - Focusing too much on the product or service without understanding customer needs\n  - Importance of Customer Understanding:\n    - Conduct market research\n    - Gather customer feedback\n    - Analyze data\n  - Developing Products/Services:\n    - Address pain points and desires of the target market\n  - Benefits of Prioritizing Customer Understanding:\n    - Increase customer loyalty\n    - Drive sales\n    - Achieve long-term success in the competitive marketplace",
+      "qna": "Q: What is the primary purpose of a business according to the lecture content?\nA: The primary purpose of a business, as emphasized in the lecture, is to understand the customer and cater to their problems effectively.\n\nQ: What common mistake do many founders make, as highlighted in the lecture?\nA: The fundamental mistake many founders make is focusing excessively on their product or service rather than truly understanding the needs and preferences of their target customers.\n\nQ: Why is it essential for businesses to conduct market research?\nA: It is essential for businesses to conduct market research to gather insights, understand customer behavior, identify market trends, and make informed decisions to develop products or services that meet customer needs effectively.\n\nQ: How can businesses gather customer feedback, as mentioned in the lecture?\nA: Businesses can gather customer feedback through surveys, focus groups, interviews, social media interactions, online reviews, and other feedback channels to understand customer preferences, pain points, and satisfaction levels.\n\nQ: What role does data analysis play in developing products or services, according to the lecture?\nA: Data analysis plays a crucial role in developing products or services by providing valuable insights into customer behavior, market trends, and competitive landscape, helping businesses make data-driven decisions to address customer needs effectively.\n\nQ: How can prioritizing customer understanding and satisfaction benefit businesses in the competitive marketplace?\nA: Prioritizing customer understanding and satisfaction can benefit businesses by increasing customer loyalty, driving sales, enhancing brand reputation, fostering long-term customer relationships, and ultimately achieving sustainable success in the competitive marketplace.\n\nQ: What are some strategies that businesses can use to effectively address the pain points and desires of their target market?\nA: Some strategies that businesses can use include personalized marketing campaigns, product customization options, responsive customer service, continuous product improvement based on feedback, and creating a seamless customer experience across all touchpoints.\n\nQ: How can businesses utilize customer feedback to improve their products or services?\nA: Businesses can utilize customer feedback to identify areas for improvement, refine product features, enhance service quality, innovate new solutions, and tailor offerings to better meet customer expectations and preferences.\n\nQ: In what ways can businesses increase customer loyalty through understanding and catering to customer needs?\nA: Businesses can increase customer loyalty by building trust, delivering exceptional customer experiences, providing value-added services, offering personalized solutions, addressing customer concerns promptly, and maintaining open communication channels with customers.\n\nQ: How can businesses ensure long-term success by focusing on customer understanding and satisfaction, as discussed in the lecture?\nA: Businesses can ensure long-term success by continuously adapting to changing customer needs, staying ahead of market trends, fostering customer relationships built on trust and value, differentiating themselves from competitors, and consistently delivering high-quality products or services that exceed customer expectations.",
+      "updated_at": {
+        "_seconds": 1758569999,
+        "_nanoseconds": 446000000
+      },
+      "created_at": {
+        "_seconds": 1758569999,
+        "_nanoseconds": 446000000
+      }
+    },
+    {
+      "id": "474b0be2-3946-4f27-90de-67bdfd1787de",
+      "user_id": "JqdSBkz9Q6KKkNxgCvx0",
+      "title": "Untitled Lecture - Part 1",
+      "transcription": "The only way to start a business is to first ask the customer what he really wants. If you don't know what you want to teach, then how will it work? If a teacher gives you an assignment, but doesn't tell you what to do in the assignment or if you haven't studied anything, then how will you do the assignment? So first go and ask the customer. You are a student, who is the customer? Teacher. So ask him what the topic is.",
+      "filtered_content": "The key to starting a successful business is to understand the needs and wants of the customer. Similarly, in education, it is important for teachers to clearly communicate the objectives and requirements of assignments to students. By seeking clarification and guidance from teachers, students can effectively complete their assignments and achieve academic success. This emphasizes the importance of communication and collaboration between teachers and students in the learning process.",
+      "summary": "Summary:\nEffective communication and understanding of customer needs are crucial for success in both business and education. In education, clear communication of assignment objectives by teachers is essential for student success. Seeking guidance and clarification from teachers helps students complete assignments and excel academically. Collaboration and communication between teachers and students play a vital role in the learning process.",
+      "notes": "- Starting a Successful Business:\n  - Understanding Customer Needs and Wants is Key\n- Education:\n  - Importance of Clear Communication in Teaching:\n    - Communicating Objectives and Requirements of Assignments\n    - Seeking Clarification and Guidance from Teachers\n    - Effective Completion of Assignments\n    - Achieving Academic Success\n  - Emphasizing Communication and Collaboration:\n    - Between Teachers and Students\n    - In the Learning Process",
+      "qna": "Q: Why is understanding the needs and wants of customers crucial for starting a successful business?\nA: Understanding customer needs and wants helps businesses tailor their products or services to meet market demands, leading to customer satisfaction and business success.\n\nQ: How does effective communication of objectives and requirements benefit students in completing assignments?\nA: Clear communication of objectives and requirements helps students understand what is expected of them, enabling them to focus their efforts and produce quality work.\n\nQ: What role does seeking clarification and guidance from teachers play in student success?\nA: Seeking clarification and guidance from teachers helps students overcome challenges, gain a deeper understanding of the material, and improve their academic performance.\n\nQ: How does collaboration between teachers and students enhance the learning process?\nA: Collaboration between teachers and students fosters a supportive learning environment, encourages active engagement, and promotes academic growth through shared knowledge and feedback.\n\nQ: Can you explain how understanding customer needs can lead to innovation in business?\nA: Understanding customer needs can inspire businesses to develop innovative solutions that address specific pain points or desires, setting them apart from competitors and driving success.\n\nQ: How can teachers effectively communicate assignment objectives to ensure student comprehension?\nA: Teachers can use clear language, provide examples, offer visual aids, and encourage questions to ensure students fully grasp assignment objectives and requirements.\n\nQ: In what ways can students benefit from actively engaging in communication with their teachers?\nA: Students can benefit from building rapport with teachers, gaining valuable insights, receiving personalized guidance, and developing stronger academic skills through effective communication.\n\nQ: Why is it important for teachers to be approachable and open to student inquiries?\nA: Being approachable and open to student inquiries fosters a positive learning environment, encourages student participation, and promotes a culture of collaboration and support in the classroom.",
+      "updated_at": {
+        "_seconds": 1758570467,
+        "_nanoseconds": 464000000
+      },
+      "created_at": {
+        "_seconds": 1758570467,
+        "_nanoseconds": 464000000
+      }
+    },
+    {
+      "id": "4f4b990e-a49a-432b-85be-7e8dcc5b10c9",
+      "user_id": "E0S9h17SHgfvm2FaC8Lh",
+      "title": "Test",
+      "transcription": "पर एसो को दो बोल सकते हो, जिससे तुम्हारा जीवन पर रिष्टर ना भी रहे तो चलेगा, पर आज वो तुम्हारा भला चाहते हैं, मुझे लगता है इस जड़े शिक्षब सबसे फ़ुर्ण है। तो प्लीज बी ओपन विदियोर एजूगेटर के लिए, चाहो आजकल के तुम्हारे एजूगेटर, खास्टवार से हमारे जीवने भी बनके रहे हैं, हमें कोई सिर्फ पितिकल पैसा नहीं पढ़ा, कुछ बात नहीं आके बोल देगा, तो हमें पढ़ा है उसको कैसे सम जज़ करेंगे, दूस्तों को भी नहीं बोलता यह बात है, तो आखे बोलो, साल में कुछ केसे हमारे पास ऐसे आते हैं, तो मैं जानता हूँ कि अगर पाँच आए हैं, तो पचास होंगे जो आए नहीं, तो मैं उसके मंच के माध्यम से भी रिक्वेस्ट करना चाहता हू",
+      "filtered_content": "You can say two things about this, even if it doesn't affect your life, they want your well-being today. I believe this root education is the most important. So please be open for video educators, whether it's your current educators, especially those who have become our lives, we don't just read for physical money, if something doesn't come and say, how will we understand it, friends don't even say this, so speak up, how do some come to us in a year, so I know that if five have come, there will be fifty who have not come, so I would like to request through its platform as well.",
+      "summary": "The lecture emphasizes the importance of education, particularly in the digital format. The speaker encourages openness towards video educators, acknowledging their increasing role in our lives. The lecture also stresses the need for active participation and communication in the learning process, rather than passive consumption. The speaker highlights that understanding comes not just from reading or acquiring information, but also from questioning and seeking clarifications. The speaker also uses the platform to request more engagement from the audience, implying that for every person who speaks up, there are many more who remain silent.",
+      "notes": "Lecture Notes:\n\nI. Importance of Openness in Education\n   - Even if it doesn't directly affect your life, educators aim for your well-being.\n   - Root education is considered the most important.\n\nII. Role of Video Educators\n   - Be open to video educators, including current ones.\n   - Video educators have become a significant part of our lives.\n\nIII. Learning Beyond Monetary Gain\n   - Education is not just for financial gain.\n   - Understanding and knowledge are equally important.\n\nIV. Encouragement to Speak Up\n   - If something is not understood, it's crucial to speak up.\n   - The number of people who don't understand a concept is likely higher than those who admit it.\n\nV. Use of Platforms for Feedback\n   - Encourages use of platforms to communicate misunderstandings or difficulties in learning.\n   - The platform can be used to request further explanation or clarification.",
+      "qna": "Q: What is the speaker's belief about the importance of education?\nA: The speaker believes that root education is the most important.\n\nQ: What does the speaker encourage from video educators?\nA: The speaker encourages openness from video educators.\n\nQ: What does the speaker imply about the importance of speaking up?\nA: The speaker implies that speaking up is important to understand and learn, and that many people may have questions or misunderstandings that they do not voice.\n\nQ: What does the speaker suggest about the ratio of people who speak up to those who don't?\nA: The speaker suggests that for every five people who speak up, there are likely fifty who do not.\n\nQ: What is the speaker's request through the platform?\nA: The speaker's specific request is not clear from the given context, but it seems to be related to encouraging more communication and openness in education.\n\nQ: According to the speaker, why don't we just read for physical money?\nA: The speaker suggests that education goes beyond just earning money, it's about understanding and learning.",
+      "updated_at": {
+        "_seconds": 1759035985,
+        "_nanoseconds": 206000000
+      },
+      "created_at": {
+        "_seconds": 1759035985,
+        "_nanoseconds": 206000000
+      }
+    },
+    {
+      "id": "56595656-1139-4c33-b1ff-e28ac33a824b",
+      "user_id": "rPFppak3uBKYIkqfsIpf",
+      "title": "Untitled Lecture",
+      "transcription": "",
+      "filtered_content": "",
+      "summary": "Without the specific lecture content, it's impossible for me to provide a comprehensive summary. Please provide the details of the lecture and I'll be happy to help.",
+      "notes": "Without any lecture content provided, I'm unable to create notes. Please provide the necessary information.",
+      "qna": "Without the lecture content, it's impossible to generate relevant questions and answers. Please provide the lecture content or topic.",
+      "updated_at": {
+        "_seconds": 1758653860,
+        "_nanoseconds": 509000000
+      },
+      "created_at": {
+        "_seconds": 1758653860,
+        "_nanoseconds": 509000000
+      }
+    },
+    {
+      "id": "63a63970-a2d5-45e6-9569-510063a0e41d",
+      "user_id": "114167186535229964948",
+      "title": "Untitled Lecture - Part 1",
+      "transcription": "Kids, today we will talk about AI. AI means Artificial Intelligence. The world is changing and it will change a lot. AI means that your brain, your human brain, you have put it in a computer and that computer is thinking. Humans were different from computers in that they could think, they had the ability to think. Now we have given that to the computer. Now the computer can think and make a solution. So this is a very big thing. This thing can be used in a good way or a bad way of course. You can also use AI wrongly, those who do it. Wrong use in the sense, for example, that you have hacked someone's computer. So all these things can also happen with AI. Good things can also happen, you can learn from AI, you can make something from AI. First, you needed a lot of developers, people, people of marketing, all this took a lot of hard work. Now you can do that work in a few minutes because you have AI now. So AI has exponentially large number of good ways in which you can utilize it and bad ways also. So use it for good, that's my advice.",
+      "filtered_content": "Today we will discuss Artificial Intelligence (AI). AI involves replicating human brain functions in computers, enabling them to think and solve problems. This advancement has significant implications for various fields. AI can be utilized for both positive and negative purposes. Positive applications include learning from AI and streamlining tasks that previously required extensive human effort. However, misuse of AI, such as hacking, can have detrimental consequences. It is crucial to use AI ethically and responsibly to harness its potential benefits effectively.",
+      "summary": "The lecture focuses on Artificial Intelligence (AI), which aims to mimic human brain functions in computers to enable problem-solving capabilities. AI has broad implications across different sectors, offering both positive and negative outcomes. Positive applications involve leveraging AI for learning and automating tasks that were labor-intensive. However, misuse of AI, like hacking, can lead to severe repercussions. Ethical and responsible use of AI is essential to maximize its benefits while minimizing risks. Students should grasp the concept of AI, its potential applications, and the importance of ethical considerations in utilizing AI effectively.",
+      "notes": "- Artificial Intelligence (AI)\n  - Definition: Replicating human brain functions in computers to enable them to think and solve problems\n  - Implications:\n    - Significant impact on various fields\n    - Positive and negative applications\n  - Positive Applications:\n    - Learning from AI\n    - Streamlining tasks that required extensive human effort\n  - Negative Applications:\n    - Misuse, such as hacking\n    - Detrimental consequences if not used ethically and responsibly\n  - Importance of Ethical Use:\n    - Crucial to harness potential benefits effectively\n    - Emphasizes the need for responsible AI development and deployment",
+      "qna": "Q: What is Artificial Intelligence (AI) and how does it differ from traditional computing?\nA: AI involves simulating human brain functions in computers to enable them to think and solve problems, while traditional computing follows pre-programmed instructions without learning capabilities.\n\nQ: What are some positive applications of AI?\nA: Positive applications of AI include learning from data to make predictions, automating repetitive tasks, enhancing efficiency, and improving decision-making processes.\n\nQ: How can AI be misused, and what are the potential consequences?\nA: AI can be misused for malicious purposes such as hacking, spreading misinformation, or invading privacy, leading to significant negative consequences like data breaches, social manipulation, and ethical dilemmas.\n\nQ: Why is it important to use AI ethically and responsibly?\nA: It is crucial to use AI ethically and responsibly to prevent harm to individuals, society, and the environment, maintain trust in AI technologies, and ensure that its benefits are maximized while minimizing risks.\n\nQ: How does AI impact various fields such as healthcare, finance, and transportation?\nA: AI revolutionizes various fields by enabling personalized medicine, improving financial forecasting, optimizing traffic flow, enhancing customer service, and transforming industries through automation and innovation.\n\nQ: Can you explain the concept of machine learning in AI?\nA: Machine learning is a subset of AI that allows computers to learn from data without being explicitly programmed, enabling them to improve performance on tasks through experience.\n\nQ: What are some common machine learning algorithms used in AI applications?\nA: Common machine learning algorithms include linear regression, decision trees, support vector machines, neural networks, and deep learning models like convolutional neural networks and recurrent neural networks.\n\nQ: How can businesses leverage AI to gain a competitive advantage?\nA: Businesses can leverage AI to analyze big data for insights, automate routine tasks, personalize customer experiences, optimize operations, and innovate products and services, thereby gaining a competitive edge in the market.\n\nQ: Discuss the importance of transparency and accountability in AI systems.\nA: Transparency and accountability in AI systems are essential to ensure that decisions made by AI algorithms are explainable, fair, and unbiased, enabling users to understand how AI works and hold developers accountable for its outcomes.",
+      "updated_at": {
+        "_seconds": 1758565633,
+        "_nanoseconds": 357000000
+      },
+      "created_at": {
+        "_seconds": 1758565633,
+        "_nanoseconds": 357000000
+      }
+    },
+    {
+      "id": "7696af2c-b959-40f4-9518-b46ad9527ae7",
+      "user_id": "rPFppak3uBKYIkqfsIpf",
+      "title": "Untitled Lecture",
+      "transcription": "When you understand the customer's needs and problems, now you have to make a minimum viable product. It means that you have to make a very basic version of your final product. It will only have simple things that directly hammer the problem. Nothing flashy or nothing for the good to see. It should be of minimum cost. Then you have to present it to the customer and ask him for his feedback. Don't assume that whatever the customer says, he wants it. Customer is like a baby, he doesn't know what he wants. You will make something and then you will present it to him. He will say that I don't want this, I want that. You will altercate it and then you will present him the next version.",
+      "filtered_content": "When developing a product, it is important to understand the customer's needs and problems before creating a minimum viable product (MVP). An MVP is a basic version of the final product that addresses the core problem without any unnecessary features. It should be cost-effective and simple. Once the MVP is created, it should be presented to the customer for feedback. It is essential to remember that customers may not always know what they want, so their feedback should be carefully considered and used to iterate on the product. This iterative process involves making adjustments based on customer feedback and presenting updated versions until the desired product-market fit is achieved.",
+      "summary": "In product development, understanding customer needs is crucial before creating a minimum viable product (MVP). An MVP is a simplified version of the final product that solves the core problem without unnecessary features, being cost-effective and straightforward. Feedback from customers on the MVP is vital, even though they may not always articulate their needs clearly. This feedback guides iterative adjustments to the product until achieving the desired product-market fit.",
+      "notes": "- Product Development Process:\n  - Understanding Customer Needs:\n    - Important to understand customer's needs and problems\n  - Minimum Viable Product (MVP):\n    - Basic version of the final product\n    - Addresses core problem without unnecessary features\n    - Cost-effective and simple\n  - Customer Feedback:\n    - Present MVP to customer for feedback\n    - Customers may not always know what they want\n    - Feedback should be carefully considered\n  - Iterative Process:\n    - Making adjustments based on customer feedback\n    - Presenting updated versions\n    - Achieving desired product-market fit",
+      "qna": "Q: What is a minimum viable product (MVP) in product development?\nA: An MVP is a basic version of the final product that addresses the core problem without any unnecessary features. It is cost-effective, simple, and serves as a starting point for gathering feedback from customers.\n\nQ: Why is it important to understand the customer's needs and problems before creating an MVP?\nA: Understanding the customer's needs and problems ensures that the MVP addresses a real issue that customers are facing, increasing the likelihood of product success.\n\nQ: What is the significance of presenting the MVP to customers for feedback?\nA: Presenting the MVP to customers for feedback allows for validation of the product idea, identification of areas for improvement, and ensures that the final product meets customer expectations.\n\nQ: How should customer feedback on the MVP be utilized in the product development process?\nA: Customer feedback should be carefully considered and used to iterate on the product by making necessary adjustments to improve the product based on customer preferences and needs.\n\nQ: Why is it important to iterate on the MVP based on customer feedback?\nA: Iterating on the MVP based on customer feedback allows for continuous improvement, increases the chances of achieving product-market fit, and ensures that the final product meets customer expectations.\n\nQ: What does achieving product-market fit entail?\nA: Achieving product-market fit means that the product satisfies a strong market demand, meets customer needs effectively, and generates significant value for customers.\n\nQ: How can the iterative process benefit the product development cycle?\nA: The iterative process allows for continuous improvement, faster adaptation to changing market conditions, better alignment with customer needs, and increased chances of product success.\n\nQ: What challenges might arise when relying solely on customer feedback for product development?\nA: Challenges may include customers not always knowing what they want, conflicting feedback from different customer segments, and the need to balance customer input with the vision of the product.",
+      "updated_at": {
+        "_seconds": 1758646724,
+        "_nanoseconds": 122000000
+      },
+      "created_at": {
+        "_seconds": 1758646724,
+        "_nanoseconds": 122000000
+      }
+    },
+    {
+      "id": "887dd3c3-eaa2-4368-9fb5-c0bd6611f5a6",
+      "user_id": "fcAZoy0gQGwpwwuKgwAq",
+      "title": "Untitled Lecture",
+      "transcription": "یہاں پہ بولنا شارٹ کر ٹھیک ہے ایسے آ جائے گا",
+      "filtered_content": "بولنا یہاں پہ شارٹ کر ٹھیک ہے.",
+      "summary": "Without any specific lecture content provided, it's impossible to create a comprehensive summary. Please provide the details of the lecture you want summarized.",
+      "notes": "Sorry, I can't assist with that.",
+      "qna": "I'm sorry, but I can't assist with that.",
+      "updated_at": {
+        "_seconds": 1759037632,
+        "_nanoseconds": 690000000
+      },
+      "created_at": {
+        "_seconds": 1759037632,
+        "_nanoseconds": 690000000
+      }
+    },
+    {
+      "id": "a0800c77-6b42-42fc-a001-8fff58997302",
+      "user_id": "E0S9h17SHgfvm2FaC8Lh",
+      "title": "Untitled Lecture",
+      "transcription": "अनेसरी मुबाईल पे US की विरोड की लिस देखे बठको मत की महां के बच्चे कर रहे हैं, वो कर रहे हैं, तुम्हारी इन बेसिक चीज़ों को पूरा करने के लिए तो मद्यामधी परिवार से आते हो, तो मैंने बहुत सारे बच्चों का भविश्य सिर्फ और सिर्फ शिक्षा से बनते हुए देखा है, पढ़ने से बनते हुए देखा है, यह सच है, इसे जितना जल्दी मान लोगे उतना बेथर तुमार भी है खोगा क्योंकि जिनको सब कुछ सिल्वर स्पुर्ण में मिल जाये, ऐसे परिवार एक हजार में से एक है हमारे बेच, सिर्फ एक, नौसों नुन्यान में लोगों को ये लक्षियतों प्राप्ट करना पढ़ना पड़ेगा, बेसिकिली अगर आम ऐसे पूछो कि मेरा जीवन का �",
+      "filtered_content": "अनेसरी मुबाईल पे US की विरोध की लिस देखने की बजाय, बच्चों को बेसिक चीज़ों को पूरा करने के लिए प्रेरित करें। मध्यमवर्गीय परिवार से आने वाले बच्चों का भविष्य शिक्षा से बनता है। यह सच है, और इसे जल्दी स्वीकार करना बेहतर होगा। जिनको सब कुछ सिल्वर स्पून में मिल जाता है, ऐसे परिवार बहुत कम होते हैं। अधिकांश लोगों को अपने लक्ष्यों को प्राप्त करने के लिए पढ़ाई करनी पड़ती है।",
+      "summary": "The lecture emphasizes the importance of education, particularly for children from middle-class families. Instead of focusing on the US's opposition list on mobile phones, it encourages children to concentrate on mastering basic skills. The lecture asserts that the future of children from middle-class families is shaped by education. It also acknowledges that families where everything is handed on a silver platter are rare, and most people need to study to achieve their goals.",
+      "notes": "लेक्चर का विषय: बच्चों की शिक्षा और उसका महत्व\n\nI. अनेसरी मुबाईल पे US की विरोध की लिस देखने की बजाय\n   - बच्चों को बेसिक चीज़ों को पूरा करने के लिए प्रेरित करने की जरूरत।\n\nII. मध्यमवर्गीय परिवार से आने वाले बच्चों का भविष्य\n   - शिक्षा का महत्व और उसका प्रभाव भविष्य पर।\n   - शिक्षा के बिना भविष्य की स्थापना की कठिनाई।\n\nIII. सच्चाई को स्वीकार करने की आवश्यकता\n   - सब कुछ सिल्वर स्पून में मिलने वाले परिवारों की कमी।\n   - अधिकांश लोगों को अपने लक्ष्यों को प्राप्त करने के लिए पढ़ाई की आवश्यकता।\n\nIV. निष्कर्ष\n   - शिक्षा का महत्व और उसका भविष्य पर प्रभाव।\n   - बच्चों को बेसिक चीज़ों को पूरा करने के लिए प्रेरित करने की आवश्यकता।\n   - सच्चाई को स्वीकार करने और उस पर कार्य करने की आवश्यकता।",
+      "qna": "Q: अनेसरी मुबाईल पे US की विरोध की लिस क्या है?\nA: यह एक गलत समझौता है। वास्तविक विषय संदर्भ में बच्चों को बेसिक चीज़ों को पूरा करने के लिए प्रेरित करने की बात की गई है।\n\nQ: शिक्षा का भविष्य क्यों महत्वपूर्ण है?\nA: शिक्षा एक बच्चे के व्यक्तिगत और पेशेवर विकास में महत्वपूर्ण भूमिका निभाती है। यह उन्हें जीवन के लिए आवश्यक कौशल प्रदान करती है और उन्हें समाज में सकारात्मक योगदान करने की क्षमता देती है।\n\nQ: क्या सब कुछ सिल्वर स्पून में मिलने वाले परिवार बहुत कम होते हैं?\nA: हां, ऐसे परिवार जहां बच्चों को जीवन की हर जरूरत बिना किसी संघर्ष के पूरी की जाती है, वे बहुत कम होते हैं। अधिकांश लोगों को अपने लक्ष्यों को प्राप्त करने के लिए कठिनाईयों का सामना करना पड़ता है।\n\nQ: क्या मध्यमवर्गीय परिवार से आने वाले बच्चों का भविष्य शिक्षा से बनता है?\nA: हां, मध्यमवर्गीय परिवार से आने वाले बच्चों के लिए शिक्षा एक महत्वपूर्ण साधन होती है जो उन्हें अपने भविष्य के लिए बेहतर अवसर प्रदान करती है।\n\nQ: क्या शिक्षा सभी बच्चों के लिए उत्तरदायित्व है?\nA: हां, शिक्षा सभी बच्चों के लिए एक अधिकार और उत्तरदायित्व है। यह उन्हें जीवन की चुनौतियों का सामना करने की क्षमता देती है और उन्हें सशक्त बनाती है।",
+      "updated_at": {
+        "_seconds": 1759035524,
+        "_nanoseconds": 960000000
+      },
+      "created_at": {
+        "_seconds": 1759035524,
+        "_nanoseconds": 960000000
+      }
+    },
+    {
+      "id": "a2e40af3-25b7-4b25-b40b-f17a338a4c2b",
+      "user_id": "rPFppak3uBKYIkqfsIpf",
+      "title": "Untitled Lecture",
+      "transcription": "Thank you for watching.",
+      "filtered_content": "",
+      "summary": "Without the lecture content, I'm unable to provide a summary. Please provide the details of the lecture.",
+      "notes": "Without the lecture content, I'm unable to create notes. Could you please provide the content?",
+      "qna": "Without the lecture content, I'm unable to provide specific questions and answers. However, I can create a general example based on a hypothetical lecture about climate change:\n\nQ: What are the primary gases contributing to the greenhouse effect?\nA: The primary gases contributing to the greenhouse effect are carbon dioxide, methane, nitrous oxide, and water vapor.\n\nQ: How does deforestation contribute to climate change?\nA: Deforestation contributes to climate change by reducing the amount of carbon dioxide that can be absorbed by trees, thereby increasing the concentration of this gas in the atmosphere.\n\nQ: Can you explain the difference between weather and climate?\nA: Weather refers to short-term atmospheric conditions, while climate refers to long-term patterns of weather in a specific area.\n\nQ: What is the role of human activities in climate change?\nA: Human activities, particularly the burning of fossil fuels and deforestation, are increasing the concentration of greenhouse gases in the Earth's atmosphere, thereby contributing to global warming and climate change.\n\nQ: What are some potential impacts of climate change on human societies?\nA: Potential impacts of climate change on human societies include increased frequency and severity of natural disasters, changes in agricultural productivity, and health issues related to heat stress and air quality.\n\nQ: What are some strategies for mitigating climate change?\nA: Strategies for mitigating climate change include reducing greenhouse gas emissions, increasing energy efficiency, adopting renewable energy sources, and implementing carbon capture and storage technologies.\n\nQ: Can you explain the concept of 'carbon footprint'?\nA: A 'carbon footprint' is the total amount of greenhouse gases that are emitted into the atmosphere as a result of human activities, such as driving a car or using electricity. It is usually measured in units of carbon dioxide.",
+      "updated_at": {
+        "_seconds": 1758653383,
+        "_nanoseconds": 590000000
+      },
+      "created_at": {
+        "_seconds": 1758653383,
+        "_nanoseconds": 590000000
+      }
+    },
+    {
+      "id": "b3875593-d742-48c1-9d66-b1e86a492420",
+      "user_id": "3ASQgf0QFrk68mmSXBSj",
+      "transcription": "The moment you realize this fact that you don't need to have an example to do something. What often people end up falling in the trap of is that they see that no one has done it and so they will not even consider pursuing it. People always want someone to follow, the mindset is that they don't want to do something differently or don't even consider the possibility of choosing a different path than society. It is somewhat ingrained from the childhood that we have always done something that other people do. For example, we always play a very weird analogy but we always play those sports that other people play. For example, we don't play football with our hands because the rules say that you have to play it with your feet, children don't play football with their hands. But when you grow up, you have to break rules in order to do something big or if you want to do something, you want. But in our mind, it is ingrained that there should be a rule or an example for everything. Elon Musk has made reusable rockets, it is not that no one in the world will have it in their mind that the rocket that is going can come back. But just because nobody has done it, there is no example, people don't consider it.",
+      "filtered_content": "People often fall into the trap of only pursuing things that have been done before or have examples to follow. This mindset is ingrained from childhood, where individuals tend to follow societal norms and established practices. However, breaking rules and exploring new paths is essential for innovation and progress. For instance, Elon Musk's development of reusable rockets demonstrates the importance of thinking outside the box and not being limited by existing examples or rules. It is crucial to challenge conventional thinking and consider new possibilities, even if they have not been done before.",
+      "summary": "The lecture emphasizes the significance of breaking away from conventional thinking and established norms to foster innovation and progress. It highlights how individuals are often conditioned to follow existing practices and societal norms, hindering their ability to explore new ideas. The example of Elon Musk's creation of reusable rockets is used to illustrate the importance of thinking creatively and not being constrained by existing boundaries. The key takeaway is the necessity of challenging traditional perspectives, considering unexplored possibilities, and venturing into uncharted territories to drive innovation and advancement. Students are encouraged to embrace a mindset that goes beyond the familiar and to be open to unconventional approaches in order to make meaningful contributions in their respective fields.",
+      "notes": "- Trap of Conventional Thinking:\n  - People tend to pursue things with existing examples or follow established practices.\n  - Mindset ingrained from childhood, following societal norms.\n- Importance of Breaking Rules:\n  - Essential for innovation and progress.\n  - Example: Elon Musk's reusable rockets.\n- Lessons from Elon Musk:\n  - Development of reusable rockets.\n  - Thinking outside the box.\n  - Not limited by existing examples or rules.\n- Challenging Conventional Thinking:\n  - Crucial for considering new possibilities.\n  - Encourages innovation and progress.",
+      "qna": "Q: What is the common trap that people often fall into when pursuing new ideas or projects?\nA: The common trap is only pursuing things that have been done before or have examples to follow, which limits innovation and progress.\n\nQ: How is the mindset of following societal norms and established practices ingrained in individuals from childhood?\nA: Individuals are taught from childhood to follow societal norms and established practices through education, family influence, and cultural expectations.\n\nQ: Provide an example of someone who demonstrated the importance of breaking rules and exploring new paths for innovation.\nA: Elon Musk's development of reusable rockets is an example of breaking rules and exploring new paths for innovation in the aerospace industry.\n\nQ: Why is it crucial to challenge conventional thinking when pursuing new ideas or projects?\nA: Challenging conventional thinking is crucial because it opens up new possibilities, drives innovation, and leads to progress in various fields.\n\nQ: How can thinking outside the box contribute to innovation and progress?\nA: Thinking outside the box allows individuals to consider new possibilities, unconventional solutions, and innovative approaches that can lead to breakthroughs and progress.\n\nQ: What are the potential risks of only following existing examples or rules when pursuing new ventures?\nA: The potential risks include stagnation, missed opportunities for growth, lack of creativity, and being outpaced by competitors who innovate.\n\nQ: How can individuals cultivate a mindset of exploring new paths and breaking rules for innovation?\nA: Individuals can cultivate this mindset by embracing curiosity, being open to new ideas, challenging assumptions, taking calculated risks, and learning from failures.\n\nQ: Discuss the role of Elon Musk's approach to innovation in inspiring others to think beyond existing boundaries.\nA: Elon Musk's approach to innovation, such as with reusable rockets and electric vehicles, has inspired others to think beyond existing boundaries, push the limits of technology, and pursue ambitious goals.\n\nQ: How can individuals balance the need for following established practices with the importance of exploring new paths for innovation?\nA: Individuals can balance these by recognizing when to leverage existing practices for efficiency and stability, while also actively seeking opportunities to innovate, experiment, and challenge the status quo.\n\nQ: In what ways can breaking rules and exploring new paths benefit not only individuals but also society as a whole?\nA: Breaking rules and exploring new paths can lead to technological advancements, economic growth, improved quality of life, and solutions to complex societal challenges, benefiting both individuals and society as a whole.",
+      "created_at": {
+        "_seconds": 1758649088,
+        "_nanoseconds": 300000000
+      },
+      "updated_at": {
+        "_seconds": 1758649121,
+        "_nanoseconds": 553000000
+      },
+      "title": "Break rules"
+    },
+    {
+      "id": "b6401896-e258-4e50-85a5-49fc762e0c4c",
+      "user_id": "BSDodfkvY7DRR1oFvx0g",
+      "title": "How to record a lecture ",
+      "transcription": "तो आज हम शीकेंगे How to record a lecture Today we will learn how to record a lecture on this trillion notes website तो इसमें सबसे पहले तो आपको अपना lecture title लालना होता है वैसे वो optional है If you don't want it's fine बड़े लिए बेटर वो होगा आपको बेटर होगा तो आप उसके बिल्कुल डालिए अब आप डबाईए अपने microphone बटन पे you will see a red colored microphone button click on it and after that the recording will start उसके जब recording शुरू हो जाएगी आपको नीचे times लिखता दिखेगा उसमें दिखेगे कितने times री रीगादिंग चल रही है and when your work is done when you have recorded what all you wanted आप बस simply उस grey square बटन पे डबाईए दिखेगे when you click on that grey square button तो recording end हो जाएगी और आपके notes खुद जेनेरेट होके आ जाएगे Thank you",
+      "filtered_content": "Today, we will learn how to record a lecture on the Trillion Notes website. First, you need to enter your lecture title, although this is optional. If you prefer not to, that's fine. However, it would be better if you do. Click on the red colored microphone button to start the recording. Once the recording starts, you will see a timer indicating how long the recording has been running. When you have finished recording, click on the grey square button to end the recording. Your notes will then be automatically generated. Thank you.",
+      "summary": "The lecture provides a step-by-step guide on how to record a lecture on the Trillion Notes website. It begins by suggesting the optional step of entering a lecture title for better organization. To start the recording, one must click on the red microphone button, which activates a timer to track the duration of the recording. To conclude the recording, the user should click on the grey square button. After ending the recording, the website automatically generates notes.",
+      "notes": "# Lecture: How to Record a Lecture on Trillion Notes Website\n\n## Introduction\n- The lecture focuses on the process of recording a lecture on the Trillion Notes website.\n\n## Entering Lecture Title\n- The first step is to enter the title of your lecture.\n- This step is optional, but recommended for better organization.\n\n## Starting the Recording\n- To start the recording, click on the red microphone button.\n- Once the recording starts, a timer will appear indicating the duration of the recording.\n\n## Ending the Recording\n- To end the recording, click on the grey square button.\n- After ending the recording, notes will be automatically generated.\n\n## Conclusion\n- The Trillion Notes website provides a user-friendly interface for recording lectures and automatically generating notes.",
+      "qna": "Q: What is the first step in recording a lecture on the Trillion Notes website?\nA: The first step is to enter your lecture title, although this is optional.\n\nQ: What happens if you choose not to enter a lecture title on the Trillion Notes website?\nA: If you choose not to enter a lecture title, you can still proceed with the recording. However, it's recommended to enter a title for better organization.\n\nQ: How do you start the recording of a lecture on the Trillion Notes website?\nA: To start the recording, you need to click on the red colored microphone button.\n\nQ: How can you track the duration of your recording on the Trillion Notes website?\nA: Once the recording starts, a timer will appear indicating how long the recording has been running.\n\nQ: What should you do to end the recording of a lecture on the Trillion Notes website?\nA: To end the recording, you need to click on the grey square button.\n\nQ: What happens after you end the recording of a lecture on the Trillion Notes website?\nA: After you end the recording, your notes will be automatically generated.",
+      "updated_at": {
+        "_seconds": 1759037908,
+        "_nanoseconds": 46000000
+      },
+      "created_at": {
+        "_seconds": 1759037908,
+        "_nanoseconds": 46000000
+      }
+    },
+    {
+      "id": "cd0e0ded-b79d-4d08-a28e-8b5169d019a9",
+      "user_id": "JqdSBkz9Q6KKkNxgCvx0",
+      "title": "Untitled Lecture - Part 1",
+      "transcription": "You will not be able to make a good business if you don't understand that to run a business, you have to first ask the customer what he really wants. This is a fundamental mistake a lot of founders make is that they will build something they have a rough idea about. They think that there is a problem that exists in this world and they will make a solution for it. They don't know who the customer is. They don't know what exactly the problem is. They are building something on their own. They are building what they want to build or what looks good while building. They are not making something that is actually needed.",
+      "filtered_content": "To run a successful business, it is crucial to understand the importance of identifying and addressing customer needs. Many founders make the mistake of creating products or services based on their own assumptions rather than consulting with customers. This approach can lead to developing solutions that may not align with actual customer needs. Therefore, it is essential for entrepreneurs to engage with customers, gather feedback, and tailor their offerings to meet specific demands in the market. By prioritizing customer input and focusing on addressing real problems, businesses can increase their chances of success and sustainability in the long run.",
+      "summary": "The lecture emphasizes the significance of identifying and meeting customer needs for business success. Entrepreneurs are advised against relying solely on personal assumptions when creating products or services, as this can result in solutions that do not resonate with actual customer requirements. Instead, engaging with customers, collecting feedback, and customizing offerings to fulfill market demands are crucial steps. By prioritizing customer input and concentrating on solving genuine problems, businesses can enhance their prospects of long-term success and sustainability.",
+      "notes": "- Importance of Identifying and Addressing Customer Needs:\n  - Crucial for running a successful business\n  - Founders often make the mistake of:\n    - Creating products/services based on assumptions\n    - Not consulting with customers\n  - Result:\n    - Solutions may not align with actual customer needs\n\n- Strategies for Success:\n  - Engage with customers:\n    - Gather feedback\n    - Tailor offerings to meet specific demands\n  - Prioritize customer input\n  - Focus on addressing real problems\n\n- Benefits of Customer-Centric Approach:\n  - Increased chances of success\n  - Enhanced sustainability in the long run\n\n- Example:\n  - Company A:\n    - Consulted with target customers before product development\n    - Incorporated feedback to create a user-friendly interface\n    - Resulted in high customer satisfaction and increased sales",
+      "qna": "Q: What is the significance of identifying and addressing customer needs in running a successful business?\nA: Identifying and addressing customer needs is crucial as it ensures that products or services offered align with market demands, increasing the chances of business success and sustainability.\n\nQ: Why do many founders make the mistake of creating products or services based on their assumptions rather than consulting with customers?\nA: Many founders rely on their assumptions due to biases, lack of customer interaction, or overconfidence in their ideas, which can lead to developing solutions that do not meet actual customer needs.\n\nQ: How can entrepreneurs benefit from engaging with customers and gathering feedback?\nA: Engaging with customers and gathering feedback allows entrepreneurs to understand customer preferences, pain points, and expectations, enabling them to tailor their offerings to meet specific market demands effectively.\n\nQ: What are the risks associated with not prioritizing customer input in business decision-making?\nA: Not prioritizing customer input can result in developing products or services that do not resonate with the target market, leading to low sales, customer dissatisfaction, and potential business failure.\n\nQ: How does focusing on addressing real problems help businesses increase their chances of success?\nA: Focusing on addressing real problems ensures that businesses provide solutions that fulfill genuine needs in the market, leading to higher customer satisfaction, loyalty, and competitive advantage.\n\nQ: What strategies can entrepreneurs use to gather customer feedback effectively?\nA: Entrepreneurs can utilize surveys, interviews, focus groups, social media polls, and customer observation to gather feedback and insights on customer preferences, behaviors, and expectations.\n\nQ: How can businesses tailor their offerings to meet specific customer demands?\nA: Businesses can tailor their offerings by customizing product features, improving service delivery, adjusting pricing strategies, enhancing customer support, and implementing feedback-driven changes based on customer input.\n\nQ: In what ways can customer-centric approaches impact the long-term sustainability of a business?\nA: Customer-centric approaches can lead to increased customer loyalty, positive word-of-mouth referrals, higher customer lifetime value, improved brand reputation, and sustained business growth over time.",
+      "updated_at": {
+        "_seconds": 1758570263,
+        "_nanoseconds": 202000000
+      },
+      "created_at": {
+        "_seconds": 1758570263,
+        "_nanoseconds": 202000000
+      }
+    },
+    {
+      "id": "d18c8f3a-a17f-4c2a-b06e-ddb9666443eb",
+      "user_id": "3ASQgf0QFrk68mmSXBSj",
+      "title": "Untitled Lecture",
+      "transcription": "The primary function of a business is to understand the needs of the customer. If the business is unable to cater to the needs and what founders end up doing is that ki wo ghar baithe kuch solution, unko lagta hai yeh problem hai. Customer se jaaki kabhi baat nahi karenge ki kya yeh problem hai, nahi hai. They'll sit at home, they'll think of a problem, they'll ideate the solution, they'll start making the solution. And jab wo market mein launch karte hai toh kya hota hai bhai, chahiye nahi kisi ko. Arre kyun kyun nahi chahiye, kyunki aapne customer se pehle pucha ki kya karna hai. It is like teacher aapko assignment deta hai, ab tab kaam karte ho. Agar aapne khudi assignment soch ke liye, khudi de diya, toh marks dhunna milenge aapko. Aapko teacher se jaaki pehle, assignment kya hai, kaise karna hai, phir aap apne creativity lagaoge ki chalo aise karta ho, aise karta ho. Then the teacher will give you marks. Same thing hai bhai usme business me bhi. Aap customer teacher aap jaaki usse puchoge ki yaar yeh karna hai, yeh karna hai, yeh problem hai, yeh solve karta ho. Tu bolta, haan yaar problem toh hai, mujhe chahiye toh solution. And then you'll use your own brain, your own resources to develop a solution. And then you'll present it, tab bikta hai.",
+      "filtered_content": "The primary function of a business is to understand the needs of the customer. If a business is unable to cater to these needs, it may fail. Often, founders will sit at home, think of a problem, ideate a solution, and start making the solution without ever consulting the customer to see if the problem actually exists. When they launch this solution in the market, they may find that no one wants it because they never asked the customer what they needed in the first place. This is similar to a student who completes an assignment without first asking the teacher what the assignment is and how it should be done. In business, you need to ask the customer what their problem is and how they would like it to be solved. Then, you can use your own resources and creativity to develop a solution. Only then will your solution be successful in the market.",
+      "summary": "The lecture emphasizes the importance of understanding customer needs in business. It highlights the common mistake made by founders who create solutions without consulting the customer, leading to potential failure upon market launch. The lecture compares this to a student completing an assignment without understanding the requirements. The key takeaway is that businesses should first identify the customer's problem and their preferred solution before using their resources and creativity to develop a product or service. This approach increases the likelihood of market success.",
+      "notes": "Title: Understanding Customer Needs in Business\n\nI. Importance of Understanding Customer Needs\n   - Primary function of a business is to comprehend customer needs.\n   - Failure to cater to these needs may lead to business failure.\n   - Risk of developing solutions for non-existent problems due to lack of customer consultation.\n\nII. Common Mistake in Business Approach\n   - Founders often ideate and develop solutions without consulting customers.\n   - Launching such solutions may result in failure due to lack of customer interest.\n   - Analogy: A student completing an assignment without understanding the task from the teacher.\n\nIII. Effective Business Approach\n   - Essential to ask customers about their problems and preferred solutions.\n   - Utilize resources and creativity to develop a solution based on customer input.\n   - Ensures the success of the solution in the market.",
+      "qna": "Q: What is the primary function of a business?\nA: The primary function of a business is to understand and cater to the needs of the customer.\n\nQ: What mistake do some founders make when starting a business?\nA: Some founders make the mistake of ideating and creating a solution without first consulting the customer to see if the problem they are trying to solve actually exists.\n\nQ: What is the consequence of launching a solution without consulting the customer?\nA: The consequence of launching a solution without consulting the customer is that the solution may not be successful in the market because it may not meet the customer's needs.\n\nQ: What is the correct approach to developing a solution in business?\nA: The correct approach to developing a solution in business is to first ask the customer what their problem is and how they would like it to be solved, and then use your own resources and creativity to develop a solution.\n\nQ: How is developing a solution in business similar to completing an assignment?\nA: Developing a solution in business is similar to completing an assignment because in both cases, you need to understand the problem or task at hand and the desired outcome before you can successfully complete it.\n\nQ: Why is it important to consult the customer before developing a solution?\nA: It's important to consult the customer before developing a solution because the customer is the one who will be using the solution. If the solution doesn't meet the customer's needs, it will not be successful in the market.",
+      "updated_at": {
+        "_seconds": 1759034860,
+        "_nanoseconds": 890000000
+      },
+      "created_at": {
+        "_seconds": 1759034860,
+        "_nanoseconds": 890000000
+      }
+    },
+    {
+      "id": "d21797e2-5405-459e-957a-5c1e3f0f725a",
+      "user_id": "fcAZoy0gQGwpwwuKgwAq",
+      "title": "Untitled Lecture",
+      "transcription": "The primary function of a business should be to cater to the needs of the customer. Lot of times founders क्या गलती करते हैं कि वो कुछ ऐसा होना चाहिए इसकी कोई need ही नहीं होती है और फिर वो फ्लॉप हो जाता है.",
+      "filtered_content": "The primary function of a business should be to cater to the needs of the customer. Many times, founders make the mistake of creating something that is not needed, which can lead to the failure of the business.",
+      "summary": "The lecture emphasizes the importance of customer-centric business models. It highlights the common error made by founders who develop products or services without considering market demand, which often leads to business failure. The key takeaway is that businesses should primarily focus on addressing customer needs for successful entrepreneurship.",
+      "notes": "Title: Customer-Centric Approach in Business\n\nI. Importance of Customer-Centric Approach\n   - The primary function of a business is to cater to customer needs.\n   - Businesses should focus on creating products or services that fulfill customer requirements.\n\nII. Common Mistakes by Founders\n   - Founders often make the mistake of creating products or services that are not needed.\n   - This lack of market need can lead to business failure.\n\nIII. Strategies for Success\n   - Understand customer needs before developing a product or service.\n   - Regularly evaluate and adjust business offerings based on customer feedback and market trends.",
+      "qna": "Q: What should be the primary function of a business?\nA: The primary function of a business should be to cater to the needs of the customer.\n\nQ: What common mistake do founders make that can lead to business failure?\nA: Founders often make the mistake of creating something that is not needed, which can lead to the failure of the business.\n\nQ: How can a business ensure that it is catering to the needs of the customer?\nA: A business can ensure it is catering to the needs of the customer by conducting market research, getting customer feedback, and continuously innovating to meet changing customer needs.\n\nQ: Why is it important for a business to cater to the needs of the customer?\nA: It's important for a business to cater to the needs of the customer because it ensures the business is providing a product or service that is in demand, which increases the likelihood of business success.\n\nQ: What can happen if a business fails to cater to the needs of the customer?\nA: If a business fails to cater to the needs of the customer, it can lead to a lack of demand for the product or service, which can ultimately lead to the failure of the business.\n\nQ: How can a business identify what the customer needs?\nA: A business can identify what the customer needs through various methods such as surveys, customer interviews, focus groups, and market research.\n\nQ: What role does innovation play in catering to the needs of the customer?\nA: Innovation plays a crucial role in catering to the needs of the customer as it allows the business to adapt to changing customer needs and stay ahead of competitors.",
+      "updated_at": {
+        "_seconds": 1759034317,
+        "_nanoseconds": 724000000
+      },
+      "created_at": {
+        "_seconds": 1759034317,
+        "_nanoseconds": 724000000
+      }
+    },
+    {
+      "id": "ec64c593-f723-44cb-9763-789f237f5b50",
+      "user_id": "rPFppak3uBKYIkqfsIpf",
+      "title": "Untitled Lecture",
+      "transcription": "The primary function of a business is to understand the needs of the customer and cater to them. Anything other than that is just wasting money and resources.",
+      "filtered_content": "The primary function of a business is to understand the needs of the customer and cater to them. This involves conducting market research, analyzing consumer behavior, and developing products or services that meet the demands of the target market. By focusing on customer needs, businesses can create value for their customers and build long-term relationships. Failure to understand and meet customer needs can result in wasted resources, missed opportunities, and ultimately, business failure. Therefore, businesses must prioritize customer-centric strategies to ensure their success in the market.",
+      "summary": "The core focus of a business is to comprehend and address customer needs effectively. This entails engaging in market research, evaluating consumer behavior, and crafting offerings that align with the preferences of the target audience. By centering on customer requirements, businesses can deliver value to their clientele and establish enduring connections. Neglecting to grasp and fulfill customer needs may lead to resource squandering, overlooked prospects, and eventual business collapse. Consequently, businesses must emphasize customer-centric approaches to secure their competitiveness and prosperity in the marketplace.",
+      "notes": "- Business Primary Function:\n  - Understand customer needs\n  - Cater to customer needs\n\n- Activities to Achieve Primary Function:\n  - Conduct market research\n  - Analyze consumer behavior\n  - Develop products/services meeting demands of target market\n\n- Importance of Focusing on Customer Needs:\n  - Create value for customers\n  - Build long-term relationships\n\n- Consequences of Failing to Understand/Meet Customer Needs:\n  - Wasted resources\n  - Missed opportunities\n  - Business failure\n\n- Importance of Customer-Centric Strategies:\n  - Ensure business success in the market",
+      "qna": "Q: What is the primary function of a business according to the lecture content?\nA: The primary function of a business is to understand the needs of the customer and cater to them.\n\nQ: Why is it important for businesses to conduct market research?\nA: Market research helps businesses gather information about their target market, competitors, and industry trends, enabling them to make informed decisions and develop effective strategies.\n\nQ: How does analyzing consumer behavior benefit businesses?\nA: Analyzing consumer behavior helps businesses understand why customers make certain purchasing decisions, allowing them to tailor their products or services to meet customer preferences.\n\nQ: What is the significance of developing products or services that meet the demands of the target market?\nA: Developing products or services that meet the demands of the target market ensures that businesses can satisfy customer needs, differentiate themselves from competitors, and achieve success in the market.\n\nQ: How can focusing on customer needs help businesses create value for their customers?\nA: By focusing on customer needs, businesses can develop products or services that address specific pain points or desires, ultimately providing value to customers and enhancing their overall experience.\n\nQ: What role do long-term relationships play in the success of a business?\nA: Building long-term relationships with customers fosters loyalty, repeat business, and positive word-of-mouth referrals, all of which contribute to the sustainable growth and success of a business.\n\nQ: What are the potential consequences of failing to understand and meet customer needs?\nA: Failure to understand and meet customer needs can lead to wasted resources, missed opportunities, decreased customer satisfaction, loss of market share, and ultimately, business failure.\n\nQ: Why must businesses prioritize customer-centric strategies in the market?\nA: Prioritizing customer-centric strategies is essential for businesses to stay competitive, adapt to changing customer preferences, build brand loyalty, and sustain long-term success in the market.",
+      "updated_at": {
+        "_seconds": 1758646616,
+        "_nanoseconds": 135000000
+      },
+      "created_at": {
+        "_seconds": 1758646616,
+        "_nanoseconds": 135000000
+      }
+    },
+    {
+      "id": "ee765a0e-6657-4e9f-bbc1-3661eb5b09b8",
+      "user_id": "JqdSBkz9Q6KKkNxgCvx0",
+      "title": "Untitled Lecture - Part 1",
+      "transcription": "You will not be able to make a good business if you don't understand that to run a business, you have to first ask the customer what he really wants. This is a fundamental mistake a lot of founders make is that they will build something they have a rough idea about. They think that there is a problem that exists in this world and they will make a solution for it. They don't know who the customer is. They don't know what exactly the problem is. They are building something on their own. They are building what they want to build or what looks good while building. They are not making something that is actually needed.",
+      "filtered_content": "To run a successful business, it is crucial to understand the importance of identifying and meeting customer needs. Many founders make the mistake of creating products or services based on their own assumptions rather than consulting with customers. This approach can lead to developing solutions for problems that may not exist or may not be relevant to the target market. By prioritizing customer feedback and understanding their needs, businesses can create products and services that are truly valuable and in demand.",
+      "summary": "Summary:\nUnderstanding and meeting customer needs is essential for business success. Founders should avoid making assumptions and instead prioritize customer feedback to develop products and services that are valuable and in demand. By consulting with customers, businesses can avoid creating solutions for non-existent problems and ensure relevance to the target market. Prioritizing customer needs is key to creating successful and sustainable businesses.",
+      "notes": "- Importance of Identifying and Meeting Customer Needs:\n  - Crucial for running a successful business\n  - Avoid creating products/services based on assumptions\n  - Consulting with customers is key\n  - Helps in developing relevant solutions\n  \n- Common Mistake by Founders:\n  - Creating products/services based on their assumptions\n  - Risk of developing solutions for non-existent problems\n  - Risk of creating products/services irrelevant to the target market\n  \n- Benefits of Prioritizing Customer Feedback:\n  - Helps in understanding customer needs\n  - Enables creation of valuable products/services\n  - Ensures products/services are in demand\n  \n- Key Takeaway:\n  - Customer feedback is essential for business success\n  - Understanding and meeting customer needs is crucial\n  - Avoid assumptions, prioritize customer input",
+      "qna": "Q: What is the significance of identifying and meeting customer needs in running a successful business?\nA: Understanding and meeting customer needs is crucial for creating products and services that are valuable and in demand, leading to business success.\n\nQ: Why is it a mistake for founders to rely solely on their assumptions when creating products or services?\nA: Relying on assumptions without consulting customers can result in developing solutions for non-existent problems or ones that are not relevant to the target market.\n\nQ: How can prioritizing customer feedback benefit a business?\nA: Prioritizing customer feedback helps businesses understand their customers better, leading to the creation of products and services that align with customer needs and preferences.\n\nQ: What are the potential consequences of not understanding customer needs in product development?\nA: Not understanding customer needs can result in wasted resources, failed products, and missed opportunities to meet market demands effectively.\n\nQ: How can businesses ensure they are meeting customer needs effectively?\nA: Businesses can ensure they are meeting customer needs by actively listening to feedback, conducting market research, and continuously iterating on their products or services based on customer input.\n\nQ: What role does market research play in understanding customer needs?\nA: Market research helps businesses gather data and insights about customer preferences, behaviors, and pain points, which are essential for developing products and services that meet customer needs effectively.\n\nQ: How can businesses use customer personas to better understand their target market?\nA: Creating customer personas based on demographic, psychographic, and behavioral data helps businesses visualize and empathize with their target customers, leading to more tailored products and services.\n\nQ: What are some strategies for collecting customer feedback?\nA: Strategies for collecting customer feedback include surveys, interviews, focus groups, social media monitoring, customer reviews, and usability testing.\n\nQ: How can businesses differentiate between essential customer needs and mere preferences?\nA: Businesses can differentiate between essential customer needs and preferences by focusing on fundamental problems that their products or services solve, rather than superficial features or wants.\n\nQ: Why is it important for businesses to adapt and evolve based on changing customer needs?\nA: Adapting to changing customer needs ensures that businesses remain relevant, competitive, and able to sustain long-term success in dynamic markets.",
+      "updated_at": {
+        "_seconds": 1758570291,
+        "_nanoseconds": 778000000
+      },
+      "created_at": {
+        "_seconds": 1758570291,
+        "_nanoseconds": 778000000
+      }
+    }
+  ]
+}
