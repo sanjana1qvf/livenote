@@ -1,3 +1,4 @@
+import API_BASE_URL from "../config";
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
@@ -13,7 +14,7 @@ const SimpleAuth = ({ onLogin }) => {
   const [error, setError] = useState('');
 
   // Dynamic API URL - works for both local and production
-  const API_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000';
+  
 
   const handleChange = (e) => {
     setFormData({

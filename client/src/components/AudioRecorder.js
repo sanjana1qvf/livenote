@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContextSimple';
 import { Mic, MicOff, Square, Play, Pause, Trash2, Upload } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from "../config";
 
 const AudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -112,7 +113,7 @@ const AudioRecorder = () => {
       formData.append('audio', audioBlob, 'recording.webm');
       formData.append('title', title || 'Untitled Lecture');
 
-      const response = await axios.post('http://localhost:5000/api/upload', formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           ...getAuthHeaders()
