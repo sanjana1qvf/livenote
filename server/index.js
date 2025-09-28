@@ -251,7 +251,7 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
         messages: [
           {
             role: 'system',
-            content: 'You are a content filter. Remove any irrelevant content, filler words, repetitions, and non-lecture content. Keep only the essential educational content. Return only the filtered content, no explanations.'
+            content: 'You are a content filter. Remove any irrelevant content, filler words, repetitions, and non-lecture content. Keep only the essential educational content. IMPORTANT: Always respond in English, regardless of the input language. Translate any non-English content to English while preserving the meaning. Return only the filtered content in English, no explanations.'
           },
           {
             role: 'user',
@@ -289,7 +289,7 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
         messages: [
           {
             role: 'system',
-            content: 'You are a content filter. Remove any irrelevant content, filler words, repetitions, and non-lecture content. Keep only the essential educational content. Return only the filtered content, no explanations.'
+            content: 'You are a content filter. Remove any irrelevant content, filler words, repetitions, and non-lecture content. Keep only the essential educational content. IMPORTANT: Always respond in English, regardless of the input language. Translate any non-English content to English while preserving the meaning. Return only the filtered content in English, no explanations.'
           },
           {
             role: 'user',
@@ -310,7 +310,7 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       messages: [
         {
           role: 'system',
-          content: 'You are an expert at creating concise, informative summaries. Create a comprehensive summary of the lecture content.'
+          content: 'You are an expert at creating concise, informative summaries. Create a comprehensive summary of the lecture content. IMPORTANT: Always respond in English, regardless of the input language. Translate any non-English content to English while preserving the meaning.'
         },
         {
           role: 'user',
@@ -330,7 +330,7 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       messages: [
         {
           role: 'system',
-          content: 'You are an expert note-taker. Create well-structured, comprehensive notes from the lecture content. Organize them with clear headings and bullet points.'
+          content: 'You are an expert note-taker. Create well-structured, comprehensive notes from the lecture content. Organize them with clear headings and bullet points. IMPORTANT: Always respond in English, regardless of the input language. Translate any non-English content to English while preserving the meaning.'
         },
         {
           role: 'user',
@@ -350,7 +350,7 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       messages: [
         {
           role: 'system',
-          content: 'You are an expert educator. Create 5-10 relevant questions and answers based on the lecture content. Format as Q: [question] A: [answer]'
+          content: 'You are an expert educator. Create 5-10 relevant questions and answers based on the lecture content. Format as Q: [question] A: [answer]. IMPORTANT: Always respond in English, regardless of the input language. Translate any non-English content to English while preserving the meaning.'
         },
         {
           role: 'user',
