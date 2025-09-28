@@ -100,7 +100,7 @@ async function generateClassroomSummary(filteredContent) {
         content: filteredContent
       }
     ],
-    max_tokens: 1000,
+    max_tokens: 500,
     temperature: 0.3
   });
   
@@ -121,7 +121,7 @@ async function generateClassroomNotes(filteredContent) {
         content: filteredContent
       }
     ],
-    max_tokens: 2000,
+    max_tokens: 800,
     temperature: 0.3
   });
   
@@ -142,7 +142,7 @@ async function generateClassroomQnA(filteredContent) {
         content: filteredContent
       }
     ],
-    max_tokens: 1500,
+    max_tokens: 600,
     temperature: 0.3
   });
   
