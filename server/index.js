@@ -114,7 +114,7 @@ async function generateClassroomNotes(filteredContent) {
     messages: [
       {
         role: "system",
-        content: "You are an expert note-taker for educational content. Create comprehensive, well-structured notes that:\n\n1. ORGANIZE content by main topics and subtopics\n2. HIGHLIGHT key concepts, definitions, and important points\n3. INCLUDE examples, explanations, and clarifications\n4. STRUCTURE with clear headings and bullet points\n5. FOCUS on educational value and learning outcomes\n6. REMOVE any remaining noise or irrelevant content\n7. IMPORTANT: Always respond in English, regardless of input language\n8. TRANSLATE any non-English content to English while preserving meaning\n\nCreate notes that students can use for effective studying and review."
+        content: "You are an expert educational note-taker. Create comprehensive, well-structured notes in this format:\n\nNotes – [Topic Title]\n\n1. [Main Topic 1]\n\n[Key concept with clear definition]\n\n[Important details and explanations]\n\n[Examples or applications when relevant]\n\n2. [Main Topic 2]\n\n[Key concept with clear definition]\n\n[Important details and explanations]\n\n[Examples or applications when relevant]\n\n3. [Main Topic 3]\n\n[Continue pattern...]\n\nGuidelines:\n- Use numbered sections (1, 2, 3, etc.) for main topics\n- Include clear definitions for key concepts\n- Add important details and explanations\n- Include examples and applications when relevant\n- Use bullet points for lists within sections\n- Keep language clear and educational\n- No markdown formatting (#, *, etc.)\n- Always respond in English\n- Translate non-English content to English\n- Make comprehensive but organized notes for studying"
       },
       {
         role: "user",
@@ -271,7 +271,7 @@ app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    await db.deleteLecture(req.params.id);
+    await db.deleteLecture(req.params.id, req.user.id);
     res.json({ message: 'Lecture deleted successfully' });
   } catch (error) {
     console.error('Error deleting lecture:', error);
@@ -370,9 +370,8 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
         console.log(`Processing chunk ${chunk.index + 1}/${chunks.length}...`);
         
         try {
-          const audioBuffer = await fs.readFile(chunk.path);
           const transcriptionResult = await openai.audio.transcriptions.create({
-            file: new File([audioBuffer], `chunk_${chunk.index}.webm`, { type: 'audio/webm' }),
+            file: fs.createReadStream(chunk.path),
             model: 'whisper-1',
           });
           
@@ -415,9 +414,8 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       console.log('Short lecture, using standard processing...');
       
       // Transcribe processed audio
-      const audioBuffer = await fs.readFile(processedAudioPath);
       const transcriptionResult = await openai.audio.transcriptions.create({
-        file: new File([audioBuffer], req.file.filename, { type: 'audio/webm' }),
+        file: fs.createReadStream(processedAudioPath),
         model: 'whisper-1',
       });
       
@@ -430,20 +428,23 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       console.log("Enhanced classroom content filtering completed");
     }
 
-    // Generate enhanced classroom summary
-    console.log("📝 Generating enhanced classroom summary...");
-    const summary = await generateClassroomSummary(filteredContent);
-    console.log('Enhanced classroom summary generation completed');
-
-    // Generate enhanced classroom notes
-    console.log("📚 Generating enhanced classroom notes...");
-    const notes = await generateClassroomNotes(filteredContent);
-    console.log('Enhanced classroom notes generation completed');
-
-    // Generate enhanced classroom Q&A
-    console.log("❓ Generating enhanced classroom Q&A...");
-    const qna = await generateClassroomQnA(filteredContent);
-    console.log('Enhanced classroom Q&A generation completed');
+    // Generate all AI content in parallel for faster processing
+    console.log("🚀 Generating all AI content in parallel...");
+    const [summary, notes, qna] = await Promise.all([
+      generateClassroomSummary(filteredContent).then(result => {
+        console.log('✅ Enhanced classroom summary generation completed');
+        return result;
+      }),
+      generateClassroomNotes(filteredContent).then(result => {
+        console.log('✅ Enhanced classroom notes generation completed');
+        return result;
+      }),
+      generateClassroomQnA(filteredContent).then(result => {
+        console.log('✅ Enhanced classroom Q&A generation completed');
+        return result;
+      })
+    ]);
+    console.log('🎉 All AI content generation completed in parallel!');
 
     // Save to database
     const newLecture = {

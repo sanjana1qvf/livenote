@@ -277,8 +277,13 @@ class DatabaseInterface {
         return null;
       }
       
+      // Filter out undefined values to prevent Firestore errors
+      const filteredUpdateData = Object.fromEntries(
+        Object.entries(updateData).filter(([key, value]) => value !== undefined)
+      );
+      
       await lectureRef.update({
-        ...updateData,
+        ...filteredUpdateData,
         updated_at: admin.firestore.FieldValue.serverTimestamp()
       });
       

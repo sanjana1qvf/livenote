@@ -17,18 +17,38 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Enhanced audio preprocessing for classroom noise handling
+// Check if FFmpeg is available (for Render compatibility)
+let ffmpegAvailable = false;
+try {
+  ffmpeg.getAvailableFormats((err, formats) => {
+    if (!err && formats) {
+      ffmpegAvailable = true;
+      console.log('✅ FFmpeg is available for audio preprocessing');
+    } else {
+      console.log('⚠️ FFmpeg not available, using basic processing');
+    }
+  });
+} catch (error) {
+  console.log('⚠️ FFmpeg not available, using basic processing');
+}
+
+// Enhanced audio preprocessing for classroom noise handling (with fallback)
 async function preprocessAudioForClassroom(audioPath) {
+  if (!ffmpegAvailable) {
+    console.log('⚠️ FFmpeg not available, skipping audio preprocessing');
+    return audioPath; // Return original path
+  }
+
   const processedPath = audioPath.replace(/.webm$/, "_processed.webm");
   
   return new Promise((resolve, reject) => {
     ffmpeg(audioPath)
       .audioFilters([
-        "highpass=f=200",     // Remove low-frequency noise (AC, fans, rumble)
-        "lowpass=f=8000",     // Remove high-frequency noise (hiss, static)
-        "dynaudnorm",         // Dynamic audio normalization for consistent volume
-        "afftdn",             // Advanced noise reduction filter
-        "volume=1.2"          // Boost volume for better clarity
+        "highpass=f=200",     // Remove low-frequency noise
+        "lowpass=f=8000",     // Remove high-frequency noise
+        "dynaudnorm",         // Dynamic normalization
+        "afftdn",             // Advanced noise reduction
+        "volume=1.2"          // Boost volume
       ])
       .audioCodec("libopus")
       .audioBitrate("128k")
@@ -80,7 +100,7 @@ async function generateClassroomSummary(filteredContent) {
         content: filteredContent
       }
     ],
-    max_tokens: 1000,
+    max_tokens: 500,
     temperature: 0.3
   });
   
@@ -94,14 +114,14 @@ async function generateClassroomNotes(filteredContent) {
     messages: [
       {
         role: "system",
-        content: "You are an expert note-taker for educational content. Create comprehensive, well-structured notes that:\n\n1. ORGANIZE content by main topics and subtopics\n2. HIGHLIGHT key concepts, definitions, and important points\n3. INCLUDE examples, explanations, and clarifications\n4. STRUCTURE with clear headings and bullet points\n5. FOCUS on educational value and learning outcomes\n6. REMOVE any remaining noise or irrelevant content\n7. IMPORTANT: Always respond in English, regardless of input language\n8. TRANSLATE any non-English content to English while preserving meaning\n\nCreate notes that students can use for effective studying and review."
+        content: "You are an expert educational note-taker. Create comprehensive, well-structured notes in this format:\n\nNotes – [Topic Title]\n\n1. [Main Topic 1]\n\n[Key concept with clear definition]\n\n[Important details and explanations]\n\n[Examples or applications when relevant]\n\n2. [Main Topic 2]\n\n[Key concept with clear definition]\n\n[Important details and explanations]\n\n[Examples or applications when relevant]\n\n3. [Main Topic 3]\n\n[Continue pattern...]\n\nGuidelines:\n- Use numbered sections (1, 2, 3, etc.) for main topics\n- Include clear definitions for key concepts\n- Add important details and explanations\n- Include examples and applications when relevant\n- Use bullet points for lists within sections\n- Keep language clear and educational\n- No markdown formatting (#, *, etc.)\n- Always respond in English\n- Translate non-English content to English\n- Make comprehensive but organized notes for studying"
       },
       {
         role: "user",
         content: filteredContent
       }
     ],
-    max_tokens: 2000,
+    max_tokens: 800,
     temperature: 0.3
   });
   
@@ -122,7 +142,7 @@ async function generateClassroomQnA(filteredContent) {
         content: filteredContent
       }
     ],
-    max_tokens: 1500,
+    max_tokens: 600,
     temperature: 0.3
   });
   
@@ -154,7 +174,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Configure multer for file uploads with increased limits
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = 'uploads';
+    const uploadDir = process.env.NODE_ENV === 'production' ? '/tmp' : 'uploads';
     fs.ensureDirSync(uploadDir);
     cb(null, uploadDir);
   },
@@ -185,8 +205,9 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     features: {
       classroomNoiseHandling: true,
-      audioPreprocessing: true,
-      enhancedContentFiltering: true
+      audioPreprocessing: ffmpegAvailable,
+      enhancedContentFiltering: true,
+      renderCompatible: true
     }
   });
 });
@@ -271,15 +292,24 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
 
     console.log(`Processing audio file: ${audioPath}`);
 
-    // Enhanced audio preprocessing for classroom environments
-    console.log("🔧 Preprocessing audio for classroom noise reduction...");
-    const processedAudioPath = await preprocessAudioForClassroom(audioPath);
+    // Enhanced audio preprocessing for classroom environments (with fallback)
+    let processedAudioPath = audioPath;
+    if (ffmpegAvailable) {
+      console.log("🔧 Preprocessing audio for classroom noise reduction...");
+      processedAudioPath = await preprocessAudioForClassroom(audioPath);
+    } else {
+      console.log("⚠️ Skipping audio preprocessing (FFmpeg not available)");
+    }
 
     // Get audio duration using ffmpeg (use processed audio)
     const duration = await new Promise((resolve, reject) => {
       ffmpeg.ffprobe(processedAudioPath, (err, metadata) => {
-        if (err) reject(err);
-        else resolve(Math.floor(metadata.format.duration));
+        if (err) {
+          console.log("⚠️ FFprobe failed, using default duration");
+          resolve(300); // Default to 5 minutes
+        } else {
+          resolve(Math.floor(metadata.format.duration));
+        }
       });
     });
 
@@ -292,7 +322,7 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       console.log('Long lecture detected, using chunking...');
       
       // Create chunks directory
-      const chunksDir = path.join(__dirname, 'chunks');
+      const chunksDir = process.env.NODE_ENV === 'production' ? '/tmp/chunks' : path.join(__dirname, 'chunks');
       await fs.ensureDir(chunksDir);
       
       // Split audio into 10-minute chunks
@@ -312,7 +342,10 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
             .duration(chunkDuration)
             .output(chunkPath)
             .on('end', () => resolve({ path: chunkPath, index: i }))
-            .on('error', reject)
+            .on('error', (err) => {
+              console.log(`⚠️ Chunk ${i} creation failed:`, err.message);
+              resolve({ path: null, index: i }); // Continue with other chunks
+            })
             .run();
         });
         
@@ -325,12 +358,20 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       // Process each chunk
       const chunkResults = [];
       for (const chunk of chunks) {
+        if (!chunk.path) {
+          console.log(`⚠️ Skipping chunk ${chunk.index + 1} (creation failed)`);
+          chunkResults.push({
+            index: chunk.index,
+            transcription: ''
+          });
+          continue;
+        }
+        
         console.log(`Processing chunk ${chunk.index + 1}/${chunks.length}...`);
         
         try {
-          const audioBuffer = await fs.readFile(chunk.path);
           const transcriptionResult = await openai.audio.transcriptions.create({
-            file: new File([audioBuffer], `chunk_${chunk.index}.webm`, { type: 'audio/webm' }),
+            file: fs.createReadStream(chunk.path),
             model: 'whisper-1',
           });
           
@@ -363,15 +404,18 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       transcription = fullTranscription;
       
       // Clean up chunks
-      await fs.remove(chunksDir);
+      try {
+        await fs.remove(chunksDir);
+      } catch (error) {
+        console.log("⚠️ Failed to clean up chunks:", error.message);
+      }
       
     } else { // Short lecture
       console.log('Short lecture, using standard processing...');
       
       // Transcribe processed audio
-      const audioBuffer = await fs.readFile(processedAudioPath);
       const transcriptionResult = await openai.audio.transcriptions.create({
-        file: new File([audioBuffer], req.file.filename, { type: 'audio/webm' }),
+        file: fs.createReadStream(processedAudioPath),
         model: 'whisper-1',
       });
       
@@ -418,7 +462,11 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
 
     // Clean up processed audio file
     if (processedAudioPath !== audioPath) {
-      await fs.remove(processedAudioPath);
+      try {
+        await fs.remove(processedAudioPath);
+      } catch (error) {
+        console.log("⚠️ Failed to clean up processed audio:", error.message);
+      }
     }
 
     res.json({
@@ -426,9 +474,10 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       title: title,
       message: 'Audio processed successfully with enhanced classroom noise handling',
       features: {
-        audioPreprocessing: true,
+        audioPreprocessing: ffmpegAvailable,
         classroomNoiseFiltering: true,
-        enhancedContentExtraction: true
+        enhancedContentExtraction: true,
+        renderCompatible: true
       }
     });
 
@@ -459,9 +508,10 @@ app.listen(PORT, () => {
   console.log(`Login: http://localhost:${PORT}/api/auth/login`);
   console.log(`🎓 Enhanced Features:`);
   console.log(`   - Classroom noise reduction`);
-  console.log(`   - Audio preprocessing`);
+  console.log(`   - Audio preprocessing: ${ffmpegAvailable ? 'Available' : 'Not Available'}`);
   console.log(`   - Enhanced content filtering`);
   console.log(`   - Educational content focus`);
+  console.log(`   - Render compatible: ${process.env.NODE_ENV === 'production' ? 'Yes' : 'No'}`);
 });
 
 module.exports = app;

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContextSimple';
-import { Mic, MicOff, Square, Play, Pause, Trash2, Upload } from 'lucide-react';
+import { Mic, Square, Trash2, Upload } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from "../config";
 
@@ -14,8 +14,8 @@ const AudioRecorder = () => {
   const [title, setTitle] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState('');
-  const [chunks, setChunks] = useState([]);
-  const [processedChunks, setProcessedChunks] = useState([]);
+  // const [chunks, setChunks] = useState([]);
+  // const [processedChunks, setProcessedChunks] = useState([]);
   
   const mediaRecorderRef = useRef(null);
   const audioRef = useRef(null);
@@ -76,20 +76,6 @@ const AudioRecorder = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-    }
-  };
-
-  const playRecording = () => {
-    if (audioRef.current) {
-      audioRef.current.play();
-      setIsPlaying(true);
-    }
-  };
-
-  const pauseRecording = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
     }
   };
 

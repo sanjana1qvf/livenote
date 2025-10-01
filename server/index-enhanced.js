@@ -250,7 +250,7 @@ app.delete('/api/lectures/:id', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    await db.deleteLecture(req.params.id);
+    await db.deleteLecture(req.params.id, req.user.id);
     res.json({ message: 'Lecture deleted successfully' });
   } catch (error) {
     console.error('Error deleting lecture:', error);
