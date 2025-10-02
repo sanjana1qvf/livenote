@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContextSimple';
-import { Mic, Square, Trash2, Upload } from 'lucide-react';
+import { Mic, Square, Trash2, Upload, Minimize2, Maximize2 } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from "../config";
 
@@ -14,19 +14,39 @@ const AudioRecorder = () => {
   const [title, setTitle] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState('');
-  // const [chunks, setChunks] = useState([]);
-  // const [processedChunks, setProcessedChunks] = useState([]);
+  const [isBackgroundMode, setIsBackgroundMode] = useState(false);
+  const [showBackgroundAlert, setShowBackgroundAlert] = useState(false);
   
   const mediaRecorderRef = useRef(null);
   const audioRef = useRef(null);
   const intervalRef = useRef(null);
+  const backgroundIntervalRef = useRef(null);
   const navigate = useNavigate();
   const { getAuthHeaders } = useAuth();
+
+  // Load saved recording state on component mount
+  useEffect(() => {
+    const savedRecording = localStorage.getItem('backgroundRecording');
+    if (savedRecording) {
+      const data = JSON.parse(savedRecording);
+      if (data.isRecording) {
+        setIsRecording(true);
+        setRecordingTime(data.recordingTime || 0);
+        setTitle(data.title || '');
+        setShowBackgroundAlert(true);
+        // Continue recording in background
+        startBackgroundRecording();
+      }
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+      }
+      if (backgroundIntervalRef.current) {
+        clearInterval(backgroundIntervalRef.current);
       }
       if (audioUrl) {
         URL.revokeObjectURL(audioUrl);
@@ -34,7 +54,18 @@ const AudioRecorder = () => {
     };
   }, [audioUrl]);
 
-  const startRecording = async () => {
+  // Save recording state to localStorage for background recording
+  const saveRecordingState = (recordingData) => {
+    localStorage.setItem('backgroundRecording', JSON.stringify(recordingData));
+  };
+
+  // Clear saved recording state
+  const clearRecordingState = () => {
+    localStorage.removeItem('backgroundRecording');
+  };
+
+  // Start background recording (continues when tab is minimized)
+  const startBackgroundRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
@@ -53,14 +84,33 @@ const AudioRecorder = () => {
         setAudioBlob(audioBlob);
         setAudioUrl(URL.createObjectURL(audioBlob));
         stream.getTracks().forEach(track => track.stop());
+        clearRecordingState();
       };
 
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
       
+      // Save initial state
+      saveRecordingState({
+        isRecording: true,
+        recordingTime: 0,
+        title: title
+      });
+      
       intervalRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
+        setRecordingTime(prev => {
+          const newTime = prev + 1;
+          // Update saved state every 5 seconds
+          if (newTime % 5 === 0) {
+            saveRecordingState({
+              isRecording: true,
+              recordingTime: newTime,
+              title: title
+            });
+          }
+          return newTime;
+        });
       }, 1000);
 
     } catch (error) {
@@ -69,13 +119,24 @@ const AudioRecorder = () => {
     }
   };
 
+  const startRecording = async () => {
+    await startBackgroundRecording();
+    setShowBackgroundAlert(true);
+  };
+
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setIsBackgroundMode(false);
+      setShowBackgroundAlert(false);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      if (backgroundIntervalRef.current) {
+        clearInterval(backgroundIntervalRef.current);
+      }
+      clearRecordingState();
     }
   };
 
@@ -86,6 +147,7 @@ const AudioRecorder = () => {
     setAudioBlob(null);
     setAudioUrl(null);
     setRecordingTime(0);
+    clearRecordingState();
   };
 
   const processAudio = async () => {
@@ -122,6 +184,22 @@ const AudioRecorder = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Handle page visibility change (when user minimizes/maximizes browser)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (isRecording) {
+        if (document.hidden) {
+          setIsBackgroundMode(true);
+        } else {
+          setIsBackgroundMode(false);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isRecording]);
+
   if (isProcessing) {
     return (
       <div className="max-w-2xl mx-auto px-2 sm:px-0">
@@ -141,6 +219,25 @@ const AudioRecorder = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Record Your Lecture</h1>
           <p className="text-gray-600">Click the microphone to start recording your lecture</p>
         </div>
+
+        {/* Background Recording Alert */}
+        {showBackgroundAlert && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-green-800">
+                  🎙️ Background Recording Active
+                </h3>
+                <p className="text-sm text-green-700 mt-1">
+                  You can minimize this browser or use other apps while recording continues!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mb-6">
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
@@ -181,8 +278,16 @@ const AudioRecorder = () => {
               </div>
               <div className="flex items-center space-x-2 text-red-500">
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">Recording...</span>
+                <span className="text-sm font-medium">
+                  {isBackgroundMode ? 'Recording in Background...' : 'Recording...'}
+                </span>
               </div>
+              {isBackgroundMode && (
+                <div className="flex items-center space-x-2 text-blue-600 text-sm">
+                  <Minimize2 className="w-4 h-4" />
+                  <span>You can minimize this tab and use other apps!</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -227,6 +332,7 @@ const AudioRecorder = () => {
           <h3 className="font-semibold text-blue-900 mb-2">How it works:</h3>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• Click the microphone to start recording</li>
+            <li>• You can minimize the browser and use other apps while recording!</li>
             <li>• Speak clearly and at a normal pace</li>
             <li>• Click the square to stop recording</li>
             <li>• Review your recording and click "Process & Generate Notes"</li>
