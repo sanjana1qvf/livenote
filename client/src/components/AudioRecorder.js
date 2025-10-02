@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContextSimple';
-import { Mic, Square, Trash2, Upload, Minimize2, Maximize2 } from 'lucide-react';
+import { Mic, Square, Trash2, Upload, Minimize2 } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from "../config";
 
 const AudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -16,15 +15,15 @@ const AudioRecorder = () => {
   const [processingStep, setProcessingStep] = useState('');
   const [isBackgroundMode, setIsBackgroundMode] = useState(false);
   const [showBackgroundAlert, setShowBackgroundAlert] = useState(false);
+  const [recordingChunks, setRecordingChunks] = useState([]);
   
   const mediaRecorderRef = useRef(null);
   const audioRef = useRef(null);
   const intervalRef = useRef(null);
-  const backgroundIntervalRef = useRef(null);
   const navigate = useNavigate();
   const { getAuthHeaders } = useAuth();
 
-  // Load saved recording state on component mount
+  // Enhanced background recording with chunked audio
   useEffect(() => {
     const savedRecording = localStorage.getItem('backgroundRecording');
     if (savedRecording) {
@@ -34,8 +33,7 @@ const AudioRecorder = () => {
         setRecordingTime(data.recordingTime || 0);
         setTitle(data.title || '');
         setShowBackgroundAlert(true);
-        // Continue recording in background
-        startBackgroundRecording();
+        startEnhancedRecording();
       }
     }
   }, []);
@@ -45,37 +43,50 @@ const AudioRecorder = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      if (backgroundIntervalRef.current) {
-        clearInterval(backgroundIntervalRef.current);
-      }
       if (audioUrl) {
         URL.revokeObjectURL(audioUrl);
       }
     };
   }, [audioUrl]);
 
-  // Save recording state to localStorage for background recording
   const saveRecordingState = (recordingData) => {
     localStorage.setItem('backgroundRecording', JSON.stringify(recordingData));
   };
 
-  // Clear saved recording state
   const clearRecordingState = () => {
     localStorage.removeItem('backgroundRecording');
   };
 
-  // Start background recording (continues when tab is minimized)
-  const startBackgroundRecording = async () => {
+  // Enhanced recording with chunked audio for better background support
+  const startEnhancedRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100
+        } 
+      });
+      
+      const mediaRecorder = new MediaRecorder(stream, { 
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 128000
+      });
       
       mediaRecorderRef.current = mediaRecorder;
       const audioChunks = [];
+      setRecordingChunks([]);
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunks.push(event.data);
+          setRecordingChunks(prev => [...prev, event.data]);
+          // Save chunks to localStorage for persistence
+          const chunkData = {
+            chunks: [...audioChunks],
+            timestamp: Date.now()
+          };
+          localStorage.setItem('recordingChunks', JSON.stringify(chunkData));
         }
       };
 
@@ -85,13 +96,14 @@ const AudioRecorder = () => {
         setAudioUrl(URL.createObjectURL(audioBlob));
         stream.getTracks().forEach(track => track.stop());
         clearRecordingState();
+        localStorage.removeItem('recordingChunks');
       };
 
-      mediaRecorder.start();
+      // Start recording with smaller time slices for better background support
+      mediaRecorder.start(1000); // Record in 1-second chunks
       setIsRecording(true);
       setRecordingTime(0);
       
-      // Save initial state
       saveRecordingState({
         isRecording: true,
         recordingTime: 0,
@@ -101,8 +113,7 @@ const AudioRecorder = () => {
       intervalRef.current = setInterval(() => {
         setRecordingTime(prev => {
           const newTime = prev + 1;
-          // Update saved state every 5 seconds
-          if (newTime % 5 === 0) {
+          if (newTime % 10 === 0) { // Save every 10 seconds
             saveRecordingState({
               isRecording: true,
               recordingTime: newTime,
@@ -120,7 +131,7 @@ const AudioRecorder = () => {
   };
 
   const startRecording = async () => {
-    await startBackgroundRecording();
+    await startEnhancedRecording();
     setShowBackgroundAlert(true);
   };
 
@@ -133,9 +144,6 @@ const AudioRecorder = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      if (backgroundIntervalRef.current) {
-        clearInterval(backgroundIntervalRef.current);
-      }
       clearRecordingState();
     }
   };
@@ -147,7 +155,9 @@ const AudioRecorder = () => {
     setAudioBlob(null);
     setAudioUrl(null);
     setRecordingTime(0);
+    setRecordingChunks([]);
     clearRecordingState();
+    localStorage.removeItem('recordingChunks');
   };
 
   const processAudio = async () => {
@@ -184,17 +194,29 @@ const AudioRecorder = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Handle page visibility change (when user minimizes/maximizes browser)
+  // Enhanced visibility change handling
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (isRecording) {
         if (document.hidden) {
           setIsBackgroundMode(true);
+          // Show browser notification for background recording
+          if (Notification.permission === 'granted') {
+            new Notification('Recording in Background', {
+              body: 'Your lecture is being recorded. You can use other apps.',
+              icon: '/logo.png'
+            });
+          }
         } else {
           setIsBackgroundMode(false);
         }
       }
     };
+
+    // Request notification permission
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -220,7 +242,7 @@ const AudioRecorder = () => {
           <p className="text-gray-600">Click the microphone to start recording your lecture</p>
         </div>
 
-        {/* Background Recording Alert */}
+        {/* Enhanced Background Recording Alert */}
         {showBackgroundAlert && (
           <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="flex items-center">
@@ -229,10 +251,13 @@ const AudioRecorder = () => {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-green-800">
-                  🎙️ Background Recording Active
+                  🎙️ Enhanced Background Recording Active
                 </h3>
                 <p className="text-sm text-green-700 mt-1">
-                  You can minimize this browser or use other apps while recording continues!
+                  Recording continues even when browser is minimized. You can use other apps!
+                </p>
+                <p className="text-xs text-green-600 mt-1">
+                  💡 Tip: Keep the browser tab open for best results
                 </p>
               </div>
             </div>
@@ -285,9 +310,12 @@ const AudioRecorder = () => {
               {isBackgroundMode && (
                 <div className="flex items-center space-x-2 text-blue-600 text-sm">
                   <Minimize2 className="w-4 h-4" />
-                  <span>You can minimize this tab and use other apps!</span>
+                  <span>Recording continues in background!</span>
                 </div>
               )}
+              <div className="text-xs text-gray-500">
+                Chunks saved: {recordingChunks.length}
+              </div>
             </div>
           )}
 
@@ -300,9 +328,6 @@ const AudioRecorder = () => {
               <audio
                 ref={audioRef}
                 src={audioUrl}
-                onEnded={() => setIsPlaying(false)}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
                 className="w-full"
                 controls
               />
@@ -329,14 +354,15 @@ const AudioRecorder = () => {
         </div>
 
         <div className="bg-blue-50 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-900 mb-2">How it works:</h3>
+          <h3 className="font-semibold text-blue-900 mb-2">Enhanced Background Recording:</h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Click the microphone to start recording</li>
-            <li>• You can minimize the browser and use other apps while recording!</li>
-            <li>• Speak clearly and at a normal pace</li>
-            <li>• Click the square to stop recording</li>
-            <li>• Review your recording and click "Process & Generate Notes"</li>
-            <li>• AI will transcribe, summarize, and create study notes</li>
+            <li>• Click microphone to start recording</li>
+            <li>• Recording continues when browser is minimized</li>
+            <li>• Audio is saved in chunks for better reliability</li>
+            <li>• You'll get notifications when recording in background</li>
+            <li>• Perfect for long lectures (1-2 hours)</li>
+            <li>• Click square to stop recording</li>
+            <li>• AI will generate accurate notes from your recording</li>
           </ul>
         </div>
       </div>
