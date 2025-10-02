@@ -13,6 +13,200 @@ const ffmpeg = require('fluent-ffmpeg');
 const { requireAuth, register, login, getProfile } = require('./auth-simple');
 
 const app = express();
+
+// Background processing for long lectures - allows user to minimize browser
+async function processLectureInBackground(lectureId, audioPath, title, userId, duration) {
+  try {
+    console.log(`🚀 Starting background processing for lecture ${lectureId}`);
+    
+    // Update status to processing
+    await db.updateLecture(lectureId, userId, { 
+      processing_status: 'processing',
+      processing_started_at: new Date().toISOString()
+    });
+    
+    let transcription;
+    let filteredContent;
+    
+    if (duration > 1800) { // More than 30 minutes
+      console.log('📚 Long lecture detected, using chunked processing...');
+      
+      // Create chunks directory
+      const chunksDir = process.env.NODE_ENV === 'production' ? '/tmp/chunks' : path.join(__dirname, 'chunks');
+      await fs.ensureDir(chunksDir);
+      
+      // Split into 10-minute chunks
+      const chunkDuration = 600; // 10 minutes
+      const totalChunks = Math.ceil(duration / chunkDuration);
+      
+      console.log(`📦 Splitting into ${totalChunks} chunks...`);
+      
+      // Create chunks
+      const chunkPaths = [];
+      for (let i = 0; i < totalChunks; i++) {
+        const startTime = i * chunkDuration;
+        const chunkPath = path.join(chunksDir, `chunk_${i}.webm`);
+        
+        await new Promise((resolve, reject) => {
+          ffmpeg(audioPath)
+            .seekInput(startTime)
+            .duration(chunkDuration)
+            .output(chunkPath)
+            .on('end', () => resolve())
+            .on('error', (err) => {
+              console.log(`⚠️ Chunk ${i} creation failed:`, err.message);
+              resolve(); // Continue with other chunks
+            })
+            .run();
+        });
+        
+        chunkPaths.push({ path: chunkPath, index: i });
+      }
+      
+      // Process chunks in parallel
+      const chunkTranscriptions = [];
+      for (const chunk of chunkPaths) {
+        if (chunk.path) {
+          try {
+            const result = await openai.audio.transcriptions.create({
+              file: fs.createReadStream(chunk.path),
+              model: 'whisper-1',
+            });
+            chunkTranscriptions.push({ index: chunk.index, text: result.text });
+          } catch (error) {
+            console.error(`Error processing chunk ${chunk.index}:`, error);
+            chunkTranscriptions.push({ index: chunk.index, text: '' });
+          }
+        }
+      }
+      
+      // Combine transcriptions
+      const sortedTranscriptions = chunkTranscriptions.sort((a, b) => a.index - b.index);
+      transcription = sortedTranscriptions.map(t => t.text).join(' ');
+      
+      // Clean up chunks
+      try {
+        await fs.remove(chunksDir);
+      } catch (error) {
+        console.log("⚠️ Failed to clean up chunks:", error.message);
+      }
+      
+    } else {
+      // Short lecture - process normally
+      console.log('📝 Short lecture, using standard processing...');
+      
+      const transcriptionResult = await openai.audio.transcriptions.create({
+        file: fs.createReadStream(audioPath),
+        model: 'whisper-1',
+      });
+      
+      transcription = transcriptionResult.text;
+    }
+
+    // Apply content filtering
+    console.log("🎓 Applying content filtering...");
+    filteredContent = await filterClassroomContent(transcription);
+    
+    // Optimize content for faster processing
+    const maxWords = 2000;
+    const words = filteredContent.split(' ');
+    if (words.length > maxWords) {
+      console.log(`📝 Truncating content from ${words.length} to ${maxWords} words`);
+      filteredContent = words.slice(0, maxWords).join(' ');
+    }
+
+    // Generate AI content in parallel
+    console.log("🚀 Generating AI content...");
+    const [summary, notes, qna] = await Promise.all([
+      generateClassroomSummary(filteredContent),
+      generateClassroomNotes(filteredContent),
+      generateClassroomQnA(filteredContent)
+    ]);
+
+    // Update lecture with results
+    const updateData = {
+      transcription: transcription,
+      filtered_content: filteredContent,
+      summary: summary,
+      notes: notes,
+      qna: qna,
+      processing_status: 'completed',
+      processing_completed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    await db.updateLecture(lectureId, userId, updateData);
+    console.log('✅ Background processing completed');
+
+    // Clean up audio file
+    try {
+      await fs.remove(audioPath);
+    } catch (error) {
+      console.log("⚠️ Failed to clean up audio:", error.message);
+    }
+
+  } catch (error) {
+    console.error(`❌ Background processing failed:`, error);
+    
+    // Update status to failed
+    try {
+      await db.updateLecture(lectureId, userId, { 
+        processing_status: 'failed',
+        processing_error: error.message,
+        processing_completed_at: new Date().toISOString()
+      });
+    } catch (updateError) {
+      console.error('❌ Failed to update error status:', updateError);
+    }
+  }
+}
+
+
+
+
+// Check lecture processing status
+app.get('/api/lectures/:id/status', requireAuth, async (req, res) => {
+  try {
+    const lecture = await db.getLectureById(req.params.id, req.user.id);
+    if (!lecture) {
+      return res.status(404).json({ error: 'Lecture not found' });
+    }
+    
+    res.json({
+      id: lecture.id,
+      title: lecture.title,
+      status: lecture.processing_status || 'completed',
+      progress: getProcessingProgress(lecture),
+      created_at: lecture.created_at,
+      processing_started_at: lecture.processing_started_at,
+      processing_completed_at: lecture.processing_completed_at,
+      duration_minutes: lecture.duration_minutes
+    });
+  } catch (error) {
+    console.error('Error checking lecture status:', error);
+    res.status(500).json({ error: 'Failed to check lecture status' });
+  }
+});
+
+// Helper function to determine processing progress
+function getProcessingProgress(lecture) {
+  const status = lecture.processing_status || 'completed';
+  
+  switch (status) {
+    case 'uploaded':
+      return { percentage: 10, message: 'Uploaded, preparing for processing...' };
+    case 'processing':
+      return { percentage: 50, message: 'Processing audio and generating notes...' };
+    case 'completed':
+      return { percentage: 100, message: 'Processing completed!' };
+    case 'failed':
+      return { percentage: 0, message: 'Processing failed. Please try again.' };
+    default:
+      return { percentage: 100, message: 'Ready to view' };
+  }
+}
+
+
 const PORT = process.env.PORT || 5000;
 
 console.log('Environment check:');
@@ -233,205 +427,94 @@ app.get('/api/lectures/:id', requireAuth, async (req, res) => {
 app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No audio file uploaded' });
+      return res.status(400).json({ error: 'No audio file provided' });
     }
 
-    const { title } = req.body;
-    const lectureId = uuidv4();
     const audioPath = req.file.path;
+    const title = req.body.title || 'Untitled Lecture';
+    const lectureId = uuidv4();
 
-    console.log('Processing audio file:', audioPath);
+    console.log(`📁 Processing audio file: ${audioPath}`);
 
-    // Get audio duration
-    const duration = await getAudioDuration(audioPath);
-    console.log(`Audio duration: ${Math.round(duration / 60)} minutes`);
-
-    let transcription, filteredContent;
-
-    // Check if audio is longer than 10 minutes (600 seconds)
-    if (duration > 600) {
-      console.log('Long lecture detected, using chunking approach...');
-      
-      // Create temporary directory for chunks
-      const chunksDir = path.join(path.dirname(audioPath), `chunks_${lectureId}`);
-      await fs.ensureDir(chunksDir);
-      
-      try {
-        // Split audio into 10-minute chunks
-        const chunkPaths = await splitAudioIntoChunks(audioPath, chunksDir, 10);
-        console.log(`Split into ${chunkPaths.length} chunks`);
-        
-        // Process all chunks
-        const chunkResults = await processAudioChunks(chunkPaths, lectureId);
-        transcription = chunkResults.fullTranscription;
-        filteredContent = chunkResults.fullFilteredContent;
-        
-        // Clean up chunks directory
-        fs.remove(chunksDir).catch(console.error);
-        
-      } catch (chunkError) {
-        console.error('Error processing chunks:', chunkError);
-        // Fallback to single file processing
-        console.log('Falling back to single file processing...');
-        
-        const transcriptionResult = await openai.audio.transcriptions.create({
-          file: fs.createReadStream(audioPath),
-          model: "whisper-1",
-          language: "en"
-        });
-        
-        transcription = transcriptionResult.text;
-        
-        const filterResponse = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert academic content filter. Extract ONLY educational and academic content from lecture transcriptions. Remove jokes, casual conversations, off-topic discussions, personal anecdotes, administrative announcements, technical difficulties, and informal banter. Preserve educational flow and maintain context, focusing on academic concepts, explanations, examples, definitions, theories, and educational discussions."
-            },
-            {
-              role: "user",
-              content: `Please filter this lecture transcription to contain ONLY academic and educational content:\n\n${transcription}`
-            }
-          ],
-          max_tokens: 2000,
-          temperature: 0.2
-        });
-        
-        filteredContent = filterResponse.choices[0].message.content;
-      }
-    } else {
-      console.log('Short lecture, using standard processing...');
-      
-      // Standard processing for shorter audio
-      const transcriptionResult = await openai.audio.transcriptions.create({
-        file: fs.createReadStream(audioPath),
-        model: "whisper-1",
-        language: "en"
+    // Get audio duration first
+    const duration = await new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(audioPath, (err, metadata) => {
+        if (err) {
+          console.log("⚠️ FFprobe failed, using default duration");
+          resolve(300); // Default to 5 minutes
+        } else {
+          resolve(Math.floor(metadata.format.duration));
+        }
       });
-      
-      transcription = transcriptionResult.text;
-      
-      const filterResponse = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert academic content filter. Extract ONLY educational and academic content from lecture transcriptions. Remove jokes, casual conversations, off-topic discussions, personal anecdotes, administrative announcements, technical difficulties, and informal banter. Preserve educational flow and maintain context, focusing on academic concepts, explanations, examples, definitions, theories, and educational discussions."
-          },
-          {
-            role: "user",
-            content: `Please filter this lecture transcription to contain ONLY academic and educational content:\n\n${transcription}`
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.2
-      });
-      
-      filteredContent = filterResponse.choices[0].message.content;
-    }
-
-    console.log('Transcription completed');
-    console.log('Content filtering completed');
-
-    // Generate summary using filtered content
-    const summaryResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert at creating concise, informative summaries of academic lectures. Create a professional summary that captures the main educational topics, key academic concepts, theories, and important learning objectives. Focus on what students need to understand and remember for their studies."
-        },
-        {
-          role: "user",
-          content: `Please create a comprehensive academic summary of this filtered lecture content:\n\n${filteredContent}`
-        }
-      ],
-      max_tokens: 1000,
-      temperature: 0.3
     });
 
-    // Generate structured academic notes using filtered content
-    const notesResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert academic note-taker specializing in creating study-ready notes for students. Create clear, well-organized academic notes using simple text formatting. Use dashes (-) for lists, plain text for section titles, simple line breaks for organization, and standard punctuation. No markdown formatting whatsoever. Focus on key academic concepts, definitions, theories, formulas, examples, and important details that students need for studying and exams. Structure the notes logically with main topics, subtopics, and supporting details."
-        },
-        {
-          role: "user",
-          content: `Please create detailed, well-structured academic notes from this filtered lecture content:\n\n${filteredContent}`
-        }
-      ],
-      max_tokens: 1500,
-      temperature: 0.3
-    });
+    console.log(`⏱️ Audio duration: ${Math.floor(duration / 60)} minutes`);
 
-    // Generate Q&A using filtered content
-    const qaResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert educator who creates comprehensive study questions and answers from academic content. Generate important questions that test understanding of key concepts, definitions, theories, and practical applications. Format each Q&A as 'Q: [question]' followed by 'A: [detailed answer]' on the next line. Create questions that would help students prepare for exams, covering main topics, important details, and critical thinking aspects. Include different types of questions: factual, conceptual, analytical, and application-based. Make answers detailed and educational."
-        },
-        {
-          role: "user",
-          content: `Please create comprehensive study questions and answers from this lecture content. Generate 8-12 important questions that cover the main topics and key concepts:\n\n${filteredContent}`
-        }
-      ],
-      max_tokens: 2000,
-      temperature: 0.3
-    });
-
-    const summary = summaryResponse.choices[0].message.content;
-    const notes = notesResponse.choices[0].message.content;
-    const qna = qaResponse.choices[0].message.content;
-    console.log('Q&A generation completed');
-
-    // Save to database with user ID (including filtered content and Q&A)
+    // Create initial lecture record
     const newLecture = {
       id: lectureId,
       user_id: req.user.id,
-      title: title || 'Untitled Lecture',
-      transcription: transcription,
-      filtered_content: filteredContent,
-      summary,
-      notes,
-      qna,
+      title: title,
+      processing_status: 'uploaded',
+      duration_minutes: Math.floor(duration / 60),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
     await db.createLecture(newLecture);
-    console.log('Lecture saved to database successfully');
+    console.log('📝 Initial lecture record created');
 
-    // Clean up uploaded file
-    fs.remove(audioPath).catch(console.error);
+    // Determine processing strategy
+    if (duration > 1800) { // More than 30 minutes - background processing
+      console.log('🚀 Long lecture detected - starting background processing');
+      
+      // Start background processing (non-blocking)
+      processLectureInBackground(lectureId, audioPath, title, req.user.id, duration)
+        .catch(error => {
+          console.error('❌ Background processing failed:', error);
+        });
+      
+      // Return immediately with warning
+      res.json({
+        id: lectureId,
+        title: title,
+        status: 'processing',
+        message: `Your ${Math.floor(duration / 60)}-minute lecture is being processed in the background. You can minimize this tab, use Instagram, YouTube, or any other app, and come back later to find your notes ready!`,
+        estimated_time: `${Math.floor(duration / 60) * 2} minutes`,
+        warning: "✅ You can minimize this tab and use other apps - your notes will be ready when you return!",
+        features: {
+          backgroundProcessing: true,
+          userCanMinimize: true,
+          userCanUseOtherApps: true,
+          userCanCloseBrowser: false
+        }
+      });
+      
+    } else { // Short lecture - process immediately
+      console.log('⚡ Short lecture - processing immediately');
+      
+      // Process immediately
+      await processLectureInBackground(lectureId, audioPath, title, req.user.id, duration);
+      
+      res.json({
+        id: lectureId,
+        title: title,
+        status: 'completed',
+        message: 'Audio processed successfully',
+        features: {
+          immediateProcessing: true
+        }
+      });
+    }
 
-    res.json(newLecture);
   } catch (error) {
-    console.error('Error processing audio:', error);
-    
-    // Clean up uploaded file on error
-    if (req.file) {
-      fs.remove(req.file.path).catch(console.error);
-    }
-    
-    // More specific error messages
-    let errorMessage = 'Failed to process audio';
-    if (error.message.includes('timeout')) {
-      errorMessage = 'Audio processing timed out. Please try a shorter recording.';
-    } else if (error.message.includes('API key')) {
-      errorMessage = 'API configuration error. Please contact support.';
-    } else if (error.message.includes('file size')) {
-      errorMessage = 'File too large. Please compress your audio or use a shorter recording.';
-    }
-    
-    res.status(500).json({ error: errorMessage });
+    console.error('❌ Error in upload endpoint:', error);
+    res.status(500).json({ 
+      error: 'Failed to process audio. Please try again.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
-});
+}););
 
 // Merge lecture endpoint for combining multiple audio chunks
 // Update lecture endpoint

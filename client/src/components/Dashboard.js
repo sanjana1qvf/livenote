@@ -12,7 +12,19 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchLectures();
-  }, []);
+    
+    // Auto-refresh every 10 seconds if there are processing lectures
+    const interval = setInterval(() => {
+      const hasProcessingLectures = lectures.some(lecture => 
+        lecture.status === 'processing' || lecture.status === 'uploaded'
+      );
+      if (hasProcessingLectures) {
+        fetchLectures();
+      }
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, [lectures]);
 
   const fetchLectures = async () => {
     try {
