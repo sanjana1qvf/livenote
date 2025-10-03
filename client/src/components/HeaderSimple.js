@@ -52,6 +52,16 @@ const Header = () => {
             >
               Record Lecture
             </Link>
+            <Link
+              to="/upload"
+              className={`text-sm font-medium transition-colors ${
+                isActive('/upload') 
+                  ? 'text-primary-600' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Upload Lecture
+            </Link>
           </nav>
 
           {/* User Menu */}
@@ -106,6 +116,17 @@ const Header = () => {
                 }`}
               >
                 Record Lecture
+              </Link>
+              <Link
+                to="/upload"
+                onClick={() => setIsMenuOpen(false)}
+                className={`text-base font-medium transition-colors ${
+                  isActive('/upload') 
+                    ? 'text-primary-600' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Upload Lecture
               </Link>
               <div className="flex items-center space-x-2 pt-4 border-t border-gray-200">
                 <User className="h-5 w-5 text-gray-600" />

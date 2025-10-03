@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContextSimple';
 import HeaderSimple from './components/HeaderSimple';
 import DashboardSimple from './components/DashboardSimple';
 import AudioRecorder from './components/AudioRecorder';
+import UploadLecture from './components/UploadLecture';
 import LectureView from './components/LectureView';
 import LandingPage from './components/LandingPage';
 import './index.css';
@@ -41,6 +42,7 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<DashboardSimple />} />
           <Route path="/record" element={<AudioRecorder />} />
+          <Route path="/upload" element={<UploadLecture />} />
           <Route path="/lecture/:id" element={<LectureView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
