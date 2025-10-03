@@ -357,14 +357,14 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
       messages: [
         {
           role: "system",
-          content: "You are an expert academic note-taker specializing in creating study-ready notes for students. Create clear, well-organized academic notes using simple text formatting. Use dashes (-) for lists, plain text for section titles, simple line breaks for organization, and standard punctuation. No markdown formatting whatsoever. Focus on key academic concepts, definitions, theories, formulas, examples, and important details that students need for studying and exams. Structure the notes logically with main topics, subtopics, and supporting details."
+          content: "You are an expert academic note-taker specializing in creating comprehensive study-ready notes for students. Create detailed, well-organized academic notes that cover ALL important concepts, definitions, theories, formulas, examples, and applications. Use simple text formatting with dashes (-) for lists, plain text for section titles, and clear line breaks. No markdown formatting. Structure notes with:\n\n1. MAIN TOPICS (numbered sections)\n2. Key concepts with clear definitions\n3. Important theories and principles\n4. Practical examples and applications\n5. Formulas, equations, or key data points\n6. Important details students need for exams\n\nGuidelines:\n- Cover ALL important content from the lecture\n- Include specific examples to help understanding\n- Don't miss any key concepts or applications\n- Keep points concise but comprehensive\n- Ensure students won't miss critical information\n- Focus on exam-relevant material\n- Include both theoretical and practical aspects"
         },
         {
           role: "user",
           content: `Please create detailed, well-structured academic notes from this filtered lecture content:\n\n${filteredContent}`
         }
       ],
-      max_tokens: 1500,
+      max_tokens: 2000,
       temperature: 0.3
     });
 
@@ -480,14 +480,14 @@ app.post('/api/merge-lecture', requireAuth, async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are an expert academic note-taker specializing in creating study-ready notes for students. Create clear, well-organized academic notes using simple text formatting. Use dashes (-) for lists, plain text for section titles, simple line breaks for organization, and standard punctuation. No markdown formatting whatsoever. Focus on key academic concepts, definitions, theories, formulas, examples, and important details that students need for studying and exams. Structure the notes logically with main topics, subtopics, and supporting details."
+          content: "You are an expert academic note-taker specializing in creating comprehensive study-ready notes for students. Create detailed, well-organized academic notes that cover ALL important concepts, definitions, theories, formulas, examples, and applications. Use simple text formatting with dashes (-) for lists, plain text for section titles, and clear line breaks. No markdown formatting. Structure notes with:\n\n1. MAIN TOPICS (numbered sections)\n2. Key concepts with clear definitions\n3. Important theories and principles\n4. Practical examples and applications\n5. Formulas, equations, or key data points\n6. Important details students need for exams\n\nGuidelines:\n- Cover ALL important content from the lecture\n- Include specific examples to help understanding\n- Don't miss any key concepts or applications\n- Keep points concise but comprehensive\n- Ensure students won't miss critical information\n- Focus on exam-relevant material\n- Include both theoretical and practical aspects"
         },
         {
           role: "user",
           content: `Please create detailed, well-structured academic notes from this merged lecture content:\n\n${fullFilteredContent}`
         }
       ],
-      max_tokens: 1500,
+      max_tokens: 2000,
       temperature: 0.3
     });
 
