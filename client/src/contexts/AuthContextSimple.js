@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import API_BASE_URL from "../config";
 
 const AuthContext = createContext();
 
@@ -26,7 +27,7 @@ export const AuthProvider = ({ children }) => {
       
       if (token && userData) {
         // Verify token is still valid by checking profile
-        const response = await fetch('${API_BASE_URL}/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -46,16 +47,32 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Auth check error:', error);
-      setUser(null);
+      // If network fails, keep the existing local session rather than logging out
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        try { setUser(JSON.parse(userData)); } catch { setUser(null); }
+      } else {
+        setUser(null);
+      }
     } finally {
       setLoading(false);
       setIsInitialized(true);
     }
   };
 
-  const login = (userData) => {
-    console.log('Login called with user data:', userData);
-    setUser(userData);
+  const login = (data) => {
+    // Accept either { token, user } or a user object
+    const token = data?.token;
+    const userObj = data?.user || (token ? null : data);
+
+    if (token) {
+      localStorage.setItem('token', token);
+    }
+    if (userObj) {
+      localStorage.setItem('user', JSON.stringify(userObj));
+      setUser(userObj);
+    }
+
     setLoading(false);
     setIsInitialized(true);
   };

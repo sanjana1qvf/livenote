@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Calendar, Clock, FileText, Download, Copy, Check, Edit3, X, FileDown, ChevronDown } from 'lucide-react';
@@ -363,6 +364,23 @@ const LectureView = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-2 sm:px-0">
+      {/* Beta Version Notice */}
+      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-blue-800">
+              <strong>Beta Version:</strong> This is a beta version of our final product. You won't be charged for anything.
+            </p>
+            <p className="text-sm text-blue-700 mt-1">
+              If you have any issues, please email us at: <a href="mailto:shahakkshatt@gmail.com" className="underline hover:text-blue-800">shahakkshatt@gmail.com</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center space-x-4 mb-4">
@@ -503,9 +521,9 @@ const LectureView = () => {
               </div>
             </div>
             <div className="prose max-w-none">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {lecture.summary}
-              </p>
+              <div className="text-gray-800 leading-relaxed">
+                <ReactMarkdown>{lecture.summary}</ReactMarkdown>
+              </div>
             </div>
           </div>
         )}
@@ -541,8 +559,8 @@ const LectureView = () => {
               </div>
             </div>
             <div className="prose max-w-none">
-              <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {lecture.notes}
+              <div className="text-gray-800 leading-relaxed">
+                <ReactMarkdown>{lecture.notes}</ReactMarkdown>
               </div>
             </div>
           </div>

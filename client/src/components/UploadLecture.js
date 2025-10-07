@@ -139,11 +139,21 @@ const UploadLecture = () => {
           }
         },
       });
-      
-      setProcessingStep('Processing complete!');
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+
+      // If server returns processing status, persist pending lectureId for background polling
+      const { id, status } = response.data || {};
+      if (id && status === 'processing') {
+        const pending = JSON.parse(localStorage.getItem('pendingLectures') || '[]');
+        if (!pending.includes(id)) {
+          pending.push(id);
+          localStorage.setItem('pendingLectures', JSON.stringify(pending));
+        }
+        setProcessingStep('Processing in background. You can leave this page.');
+        setTimeout(() => navigate('/dashboard'), 800);
+      } else {
+        setProcessingStep('Processing complete!');
+        setTimeout(() => navigate('/dashboard'), 800);
+      }
       
     } catch (error) {
       console.error('Upload error:', error);
@@ -160,6 +170,23 @@ const UploadLecture = () => {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8">
+          {/* Beta Version Notice */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-blue-800">
+                  <strong>Beta Version:</strong> This is a beta version of our final product. You won't be charged for anything.
+                </p>
+                <p className="text-sm text-blue-700 mt-1">
+                  If you have any issues, please email us at: <a href="mailto:shahakkshatt@gmail.com" className="underline hover:text-blue-800">shahakkshatt@gmail.com</a>
+                </p>
+              </div>
+            </div>
+          </div>
+
           <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">
             Upload Audio Lecture
           </h1>

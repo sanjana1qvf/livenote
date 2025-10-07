@@ -14,6 +14,8 @@ const Dashboard = () => {
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const { getAuthHeaders, isAuthenticated, user } = useAuth();
+  const [pendingIds, setPendingIds] = useState([]);
+  const [pollTimer, setPollTimer] = useState(null);
 
   const fetchLectures = useCallback(async () => {
     // Only fetch if user is authenticated and we have a valid token
@@ -53,10 +55,59 @@ const Dashboard = () => {
     // Only fetch lectures if user is authenticated
     if (user && isAuthenticated()) {
       fetchLectures();
+      // Resume background polling for any pending lectures
+      const saved = JSON.parse(localStorage.getItem('pendingLectures') || '[]');
+      if (saved.length) {
+        setPendingIds(saved);
+      }
     } else {
       setLoading(false);
     }
   }, [fetchLectures, user, isAuthenticated]);
+
+  // Polling for background processing status
+  useEffect(() => {
+    if (!pendingIds.length) {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        setPollTimer(null);
+      }
+      return;
+    }
+
+    if (!pollTimer) {
+      const timer = setInterval(async () => {
+        try {
+          const ids = JSON.parse(localStorage.getItem('pendingLectures') || '[]');
+          if (!ids.length) return;
+          const updated = [];
+          for (const id of ids) {
+            const resp = await fetch(`${API_BASE_URL}/api/lectures/${id}/status`, { headers: { ...getAuthHeaders() } });
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data.status === 'completed') {
+                // refresh list once
+                fetchLectures();
+              } else {
+                updated.push(id);
+              }
+            } else {
+              updated.push(id);
+            }
+          }
+          localStorage.setItem('pendingLectures', JSON.stringify(updated));
+          setPendingIds(updated);
+        } catch (e) {
+          // Keep pending; try again next tick
+        }
+      }, 12000);
+      setPollTimer(timer);
+    }
+
+    return () => {
+      if (pollTimer) clearInterval(pollTimer);
+    };
+  }, [pendingIds, pollTimer, getAuthHeaders, fetchLectures]);
 
   const deleteLecture = async (id) => {
     if (!window.confirm('Are you sure you want to delete this lecture?')) {
@@ -172,6 +223,23 @@ const Dashboard = () => {
 
   return (
     <div>
+      {/* Beta Version Notice */}
+      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-blue-800">
+              <strong>Beta Version:</strong> This is a beta version of our final product. You won't be charged for anything.
+            </p>
+            <p className="text-sm text-blue-700 mt-1">
+              If you have any issues, please email us at: <a href="mailto:shahakkshatt@gmail.com" className="underline hover:text-blue-800">shahakkshatt@gmail.com</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Your Lectures</h1>
         <Link

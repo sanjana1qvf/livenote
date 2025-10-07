@@ -32,13 +32,14 @@ const AudioRecorder = () => {
         setRecordingTime(data.recordingTime || 0);
         setTitle(data.title || '');
         setShowBackgroundAlert(true);
-        startEnhancedRecording();
+        startEnhancedRecording(false); // Start recording, not paused
       } else if (data.isRecording && data.isPaused) {
         setIsRecording(true);
         setIsPaused(true);
         setRecordingTime(data.recordingTime || 0);
         setTitle(data.title || '');
         setShowBackgroundAlert(true);
+        startEnhancedRecording(true); // Start recording but then pause immediately
       }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -67,46 +68,58 @@ const AudioRecorder = () => {
   };
 
   // Enhanced recording with pause/resume support
-  const startEnhancedRecording = async () => {
+  const startEnhancedRecording = async (shouldStartPaused = false) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
+
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
       });
-      
+
       mediaRecorderRef.current = mediaRecorder;
       const chunks = [];
-      
+
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           chunks.push(event.data);
         }
       };
-      
+
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'audio/webm' });
         setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
         stream.getTracks().forEach(track => track.stop());
       };
-      
+
       mediaRecorder.start(1000); // Record in 1-second chunks
+
+      if (shouldStartPaused) {
+        // If we should start paused, pause immediately after starting
+        setTimeout(() => {
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.pause();
+          }
+        }, 100);
+      }
+
       setIsRecording(true);
-      setIsPaused(false);
+      setIsPaused(shouldStartPaused);
       setShowBackgroundAlert(true);
-      
-      // Start timer
-      intervalRef.current = setInterval(() => {
-        setRecordingTime(prev => {
-          const newTime = prev + 1;
-          saveRecordingState();
-          return newTime;
-        });
-      }, 1000);
-      
+
+      // Start timer only if not paused
+      if (!shouldStartPaused) {
+        intervalRef.current = setInterval(() => {
+          setRecordingTime(prev => {
+            const newTime = prev + 1;
+            saveRecordingState();
+            return newTime;
+          });
+        }, 1000);
+      }
+
       saveRecordingState();
-      
+
     } catch (error) {
       console.error('Error starting recording:', error);
       alert('Error accessing microphone. Please check permissions.');
@@ -115,22 +128,28 @@ const AudioRecorder = () => {
 
   // Pause recording
   const pauseRecording = () => {
+    console.log('Pause clicked - MediaRecorder state:', mediaRecorderRef.current?.state);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
       saveRecordingState();
+      console.log('Recording paused successfully');
+    } else {
+      console.log('Cannot pause - MediaRecorder not in recording state');
     }
   };
 
   // Resume recording
   const resumeRecording = () => {
+    console.log('Resume clicked - MediaRecorder state:', mediaRecorderRef.current?.state);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
-      
+
       // Resume timer
       intervalRef.current = setInterval(() => {
         setRecordingTime(prev => {
@@ -139,21 +158,29 @@ const AudioRecorder = () => {
           return newTime;
         });
       }, 1000);
-      
+
       saveRecordingState();
+      console.log('Recording resumed successfully');
+    } else {
+      console.log('Cannot resume - MediaRecorder not in paused state');
     }
   };
 
   // Stop recording
   const stopRecording = () => {
+    console.log('Stop clicked - MediaRecorder state:', mediaRecorderRef.current?.state);
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setIsPaused(false);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
       localStorage.removeItem('backgroundRecording');
+      console.log('Recording stopped successfully');
+    } else {
+      console.log('Cannot stop - MediaRecorder not available');
     }
   };
 
@@ -223,6 +250,23 @@ const AudioRecorder = () => {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8">
+          {/* Beta Version Notice */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-blue-800">
+                  <strong>Beta Version:</strong> This is a beta version of our final product. You won't be charged for anything.
+                </p>
+                <p className="text-sm text-blue-700 mt-1">
+                  If you have any issues, please email us at: <a href="mailto:shahakkshatt@gmail.com" className="underline hover:text-blue-800">shahakkshatt@gmail.com</a>
+                </p>
+              </div>
+            </div>
+          </div>
+
           <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">
             AI Lecture Recorder
           </h1>
@@ -243,7 +287,7 @@ const AudioRecorder = () => {
             </div>
           )}
 
-          {/* Recording Controls */}
+          {/* ChatGPT-style Recording UI */}
           <div className="text-center mb-8">
             {!isRecording ? (
               <button
@@ -254,43 +298,66 @@ const AudioRecorder = () => {
                 Start Recording
               </button>
             ) : (
-              <div className="space-y-4">
-                {/* Recording Status */}
-                <div className="text-2xl font-bold text-red-600 mb-4">
-                  {isPaused ? 'PAUSED' : 'RECORDING'}
+              <div className="space-y-8">
+                {/* Circular Recording Indicator */}
+                <div className="flex justify-center">
+                  <div className="relative">
+                    {/* Outer pulsing circle */}
+                    <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      isPaused
+                        ? 'bg-gray-200 border-4 border-gray-400'
+                        : 'bg-gradient-to-br from-blue-400 to-blue-600 border-4 border-blue-300 animate-pulse'
+                    }`}>
+                      {/* Inner circle with icon */}
+                      <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
+                        isPaused ? 'bg-gray-300' : 'bg-white'
+                      }`}>
+                        {isPaused ? (
+                          <Play className="w-8 h-8 text-gray-600" />
+                        ) : (
+                          <div className="w-6 h-6 bg-red-500 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Recording waves animation */}
+                    {!isPaused && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-40 h-40 border-2 border-blue-400 rounded-full animate-ping opacity-20"></div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                
+
                 {/* Timer */}
-                <div className="text-4xl font-mono text-gray-800 mb-6">
+                <div className="text-3xl font-mono text-gray-800 mb-6">
                   {formatTime(recordingTime)}
                 </div>
-                
-                {/* Control Buttons */}
-                <div className="flex justify-center space-x-4">
-                  {!isPaused ? (
-                    <button
-                      onClick={pauseRecording}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-full transition-colors duration-200 flex items-center"
-                    >
-                      <Pause className="mr-2" size={20} />
-                      Pause
-                    </button>
-                  ) : (
-                    <button
-                      onClick={resumeRecording}
-                      className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full transition-colors duration-200 flex items-center"
-                    >
-                      <Play className="mr-2" size={20} />
-                      Resume
-                    </button>
-                  )}
-                  
+
+                {/* Control Buttons - ChatGPT Style */}
+                <div className="flex justify-center space-x-6">
+                  {/* Pause/Resume Button */}
+                  <button
+                    onClick={isPaused ? resumeRecording : pauseRecording}
+                    className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 ${
+                      isPaused
+                        ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl'
+                        : 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg hover:shadow-xl'
+                    }`}
+                  >
+                    {isPaused ? (
+                      <Play className="w-6 h-6" />
+                    ) : (
+                      <Pause className="w-6 h-6" />
+                    )}
+                  </button>
+
+                  {/* Stop Button */}
                   <button
                     onClick={stopRecording}
-                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full transition-colors duration-200 flex items-center"
+                    className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
-                    <Square className="mr-2" size={20} />
-                    Stop
+                    <Square className="w-6 h-6" />
                   </button>
                 </div>
               </div>
@@ -363,9 +430,9 @@ const AudioRecorder = () => {
             <h3 className="font-semibold text-gray-800 mb-2">How to Use:</h3>
             <ul className="text-sm text-gray-600 space-y-1">
               <li>• Click <strong>Start Recording</strong> to begin</li>
-              <li>• Use <strong>Pause</strong> to temporarily stop recording</li>
-              <li>• Use <strong>Resume</strong> to continue recording</li>
-              <li>• Click <strong>Stop</strong> when finished</li>
+              <li>• The blue circle shows recording is active</li>
+              <li>• Use the <strong>Pause/Resume</strong> button (yellow/green) to control recording</li>
+              <li>• Use the <strong>Stop</strong> button (red) to finish recording</li>
               <li>• You can minimize the browser while recording</li>
               <li>• Perfect for long lectures (1-2 hours)</li>
             </ul>
