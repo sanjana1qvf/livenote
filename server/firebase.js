@@ -190,24 +190,39 @@ class DatabaseInterface {
   async createLecture(lectureData) {
     if (this.isFirebase) {
       const lectureRef = this.db.collection('lectures').doc(lectureData.id);
-      await lectureRef.set({
+      
+      // Ensure all fields have fallback values to prevent Firestore undefined errors
+      const lectureRecord = {
         id: lectureData.id,
         user_id: lectureData.user_id,
-        title: lectureData.title,
-        transcription: lectureData.transcription,
-        filtered_content: lectureData.filtered_content,
-        summary: lectureData.summary,
-        notes: lectureData.notes,
-        qna: lectureData.qna,
+        title: lectureData.title || '',
+        transcription: lectureData.transcription || '',
+        filtered_content: lectureData.filtered_content || '',
+        summary: lectureData.summary || '',
+        qna: lectureData.qna || '',
+        processing_status: lectureData.processing_status || 'processing',
+        duration_minutes: lectureData.duration_minutes || 0,
         created_at: admin.firestore.FieldValue.serverTimestamp(),
         updated_at: admin.firestore.FieldValue.serverTimestamp()
-      });
+      };
+      
+      await lectureRef.set(lectureRecord);
       return lectureData;
     } else {
       return new Promise((resolve, reject) => {
         this.sqliteDb.run(
-          'INSERT INTO lectures (id, user_id, title, transcription, filtered_content, summary, notes, qna) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-          [lectureData.id, lectureData.user_id, lectureData.title, lectureData.transcription, lectureData.filtered_content, lectureData.summary, lectureData.notes, lectureData.qna],
+          'INSERT INTO lectures (id, user_id, title, transcription, filtered_content, summary, qna, processing_status, duration_minutes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [
+            lectureData.id, 
+            lectureData.user_id, 
+            lectureData.title || '', 
+            lectureData.transcription || '', 
+            lectureData.filtered_content || '', 
+            lectureData.summary || '', 
+            lectureData.qna || '',
+            lectureData.processing_status || 'processing',
+            lectureData.duration_minutes || 0
+          ],
           function(err) {
             if (err) reject(err);
             else resolve(lectureData);

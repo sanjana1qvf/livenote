@@ -75,21 +75,54 @@ const upload = multer({
 });
 
 // Merge lecture endpoint for combining multiple audio chunks
-// Helper function to get audio duration
-function getAudioDuration(filePath) {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(metadata.format.duration);
-      }
+// Helper function to get audio duration with multiple fallback methods
+async function getAudioDuration(filePath, fileSizeMB = null) {
+  try {
+    // Method 1: ffprobe
+    const duration = await new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(filePath, (err, metadata) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(metadata.format.duration);
+        }
+      });
     });
-  });
+    
+    if (duration && duration > 0) {
+      console.log(`Duration detected via ffprobe: ${Math.round(duration / 60)} minutes`);
+      return duration;
+    }
+  } catch (error) {
+    console.warn('ffprobe failed:', error.message);
+  }
+
+  try {
+    // Method 2: File size estimation (use provided size or get it)
+    let sizeMB = fileSizeMB;
+    if (!sizeMB) {
+      const stats = await fs.stat(filePath);
+      sizeMB = stats.size / (1024 * 1024);
+    }
+    
+    // Rough estimation: 1MB ≈ 1 minute of audio (varies by quality)
+    const estimatedDuration = sizeMB * 60; // seconds
+    
+    if (estimatedDuration > 0) {
+      console.log(`Duration estimated from file size: ${Math.round(estimatedDuration / 60)} minutes`);
+      return estimatedDuration;
+    }
+  } catch (error) {
+    console.warn('File size estimation failed:', error.message);
+  }
+
+  // Method 3: Conservative fallback - assume it's long if we can't detect
+  console.log('Duration detection failed, assuming long lecture for safety');
+  return 900; // 15 minutes as safe fallback
 }
 
 // Helper function to split audio into chunks
-function splitAudioIntoChunks(inputPath, outputDir, chunkDurationMinutes = 10) {
+function splitAudioIntoChunks(inputPath, outputDir, chunkDurationMinutes = 5) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let currentChunk = 0;
@@ -97,7 +130,20 @@ function splitAudioIntoChunks(inputPath, outputDir, chunkDurationMinutes = 10) {
     
     ffmpeg(inputPath)
       .on('end', () => {
-        resolve(chunks);
+        // Get all chunk files that were created
+        fs.readdir(outputDir)
+          .then(files => {
+            const chunkFiles = files
+              .filter(file => file.startsWith('chunk_') && file.endsWith('.wav'))
+              .sort()
+              .map(file => path.join(outputDir, file));
+            console.log(`Split into ${chunkFiles.length} chunks`);
+            resolve(chunkFiles);
+          })
+          .catch(err => {
+            console.error('Error reading chunk directory:', err);
+            resolve([]);
+          });
       })
       .on('error', (err) => {
         reject(err);
@@ -149,7 +195,12 @@ async function processAudioChunks(chunkPaths, lectureId) {
         language: "en"
       });
       
-      allTranscriptions.push(transcription.text);
+      if (transcription && transcription.text && transcription.text.trim()) {
+        allTranscriptions.push(transcription.text);
+      } else {
+        console.warn(`Chunk ${i + 1} produced empty transcription`);
+        allTranscriptions.push(''); // Add empty string to maintain array structure
+      }
       
       // Filter content for this chunk
       const filterResponse = await openai.chat.completions.create({
@@ -168,7 +219,12 @@ async function processAudioChunks(chunkPaths, lectureId) {
         temperature: 0.2
       });
       
-      allFilteredContent.push(filterResponse.choices[0].message.content);
+      if (filterResponse && filterResponse.choices && filterResponse.choices[0] && filterResponse.choices[0].message && filterResponse.choices[0].message.content) {
+        allFilteredContent.push(filterResponse.choices[0].message.content);
+      } else {
+        console.warn(`Chunk ${i + 1} produced empty filtered content`);
+        allFilteredContent.push(''); // Add empty string to maintain array structure
+      }
       
       // Clean up chunk file
       fs.remove(chunkPath).catch(console.error);
@@ -179,9 +235,13 @@ async function processAudioChunks(chunkPaths, lectureId) {
     }
   }
   
+  // Ensure we have valid content before returning
+  const validTranscriptions = allTranscriptions.filter(t => t && t.trim().length > 0);
+  const validFilteredContent = allFilteredContent.filter(c => c && c.trim().length > 0);
+  
   return {
-    fullTranscription: allTranscriptions.join('\n\n'),
-    fullFilteredContent: allFilteredContent.join('\n\n')
+    fullTranscription: validTranscriptions.join('\n\n') || '',
+    fullFilteredContent: validFilteredContent.join('\n\n') || ''
   };
 }
 
@@ -255,103 +315,155 @@ app.post('/api/upload', requireAuth, upload.single('audio'), async (req, res) =>
     // Start background processing (non-blocking)
     (async () => {
       try {
+        // Get file stats once
+        const stats = await fs.stat(audioPath);
+        const fileSizeMB = stats.size / (1024 * 1024);
+        console.log(`File size: ${fileSizeMB.toFixed(2)}MB`);
+
         // Get audio duration
-        const duration = await getAudioDuration(audioPath).catch(() => 0);
+        const duration = await getAudioDuration(audioPath, fileSizeMB).catch(() => 0);
         console.log(`Audio duration: ${Math.round((duration || 0) / 60)} minutes`);
 
         let transcription, filteredContent;
 
-        // Process audio (chunk if long)
-        if (duration && duration > 600) {
-          console.log('Long lecture detected, using chunking approach...');
+        // Process audio (chunk if long OR large file)
+        const shouldChunk = (duration && duration > 300) || fileSizeMB > 20; // 5 minutes OR 20MB
+        
+        if (shouldChunk) {
+          console.log(`Long lecture detected (${Math.round(duration / 60)}min, ${fileSizeMB.toFixed(1)}MB), using chunking approach...`);
           const chunksDir = path.join(path.dirname(audioPath), `chunks_${lectureId}`);
           await fs.ensureDir(chunksDir);
           try {
-            const chunkPaths = await splitAudioIntoChunks(audioPath, chunksDir, 10);
+            // Use smaller chunks for better processing (5 minutes each)
+            const chunkPaths = await splitAudioIntoChunks(audioPath, chunksDir, 5);
+            console.log(`Split into ${chunkPaths.length} chunks`);
             const chunkResults = await processAudioChunks(chunkPaths, lectureId);
             transcription = chunkResults.fullTranscription;
             filteredContent = chunkResults.fullFilteredContent;
             fs.remove(chunksDir).catch(console.error);
           } catch (e) {
-            console.warn('Chunking failed, falling back to single processing:', e.message);
+            console.error('Chunking failed:', e.message);
+            console.log('Falling back to single transcription for large file...');
+            // Fall back to single processing even for large files
           }
+        } else {
+          console.log('Short lecture, using standard processing...');
         }
 
         if (!transcription) {
-          const transcriptionResult = await openai.audio.transcriptions.create({
-            file: fs.createReadStream(audioPath),
-            model: "whisper-1",
-            language: "en"
-          });
-          transcription = transcriptionResult.text;
+          console.log('Transcribing audio with Whisper...');
+          try {
+            const transcriptionResult = await openai.audio.transcriptions.create({
+              file: fs.createReadStream(audioPath),
+              model: "whisper-1",
+              language: "en"
+            });
+            transcription = transcriptionResult.text || '';
+            console.log('Transcription completed');
+          } catch (transcriptionError) {
+            console.error('Transcription failed:', transcriptionError.message);
+            transcription = '';
+          }
         }
 
         if (!filteredContent) {
-          const filterResponse = await openai.chat.completions.create({
+          console.log('Filtering content...');
+          try {
+            const filterResponse = await openai.chat.completions.create({
+              model: "gpt-3.5-turbo",
+              messages: [
+                { role: "system", content: "You are a content filter. Extract ONLY the educational content from the transcription. Remove jokes, casual conversations, off-topic discussions, personal anecdotes, administrative announcements, and technical difficulties. Do NOT add any external knowledge or information. Only include what was actually said that is educational in nature." },
+                { role: "user", content: `Please filter this lecture transcription to contain ONLY the educational content that was actually spoken:\n\n${transcription}` }
+              ],
+              max_tokens: 2000,
+              temperature: 0.1
+            });
+            filteredContent = filterResponse.choices[0].message.content || '';
+            console.log('Content filtering completed');
+          } catch (filterError) {
+            console.error('Content filtering failed:', filterError.message);
+            filteredContent = transcription || '';
+          }
+        }
+
+        let summaryResponse, notesResponse, qaResponse;
+        
+        try {
+          summaryResponse = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [
-              { role: "system", content: "You are a content filter. Extract ONLY the educational content from the transcription. Remove jokes, casual conversations, off-topic discussions, personal anecdotes, administrative announcements, and technical difficulties. Do NOT add any external knowledge or information. Only include what was actually said that is educational in nature." },
-              { role: "user", content: `Please filter this lecture transcription to contain ONLY the educational content that was actually spoken:\n\n${transcription}` }
+              { role: "system", content: "You are a precise summarizer. Create clean, structured summaries with numbered sections and bullet points. Base summary ONLY on provided content - no external knowledge or assumptions." },
+              { role: "user", content: `Create a structured summary in this exact format:\n\n**1. [Main Topic]**\n\n• Key point 1\n\n• Key point 2\n\n• Key point 3\n\n**2. [Next Topic]**\n\n• Key point 1\n\n• Key point 2\n\n**3. [Another Topic]**\n\n• Key point 1\n\n• Key point 2\n\nFormat Requirements:\n- Use **Bold** for section headings (1., 2., 3., etc.)\n- Use • for bullet points under each section\n- Each bullet point must be a single, clear sentence\n- No paragraph-style writing - only bullet points and sentences\n- **CRITICAL: Add a blank line between each bullet point**\n- **CRITICAL: Add a blank line after each section heading**\n- Keep points concise and factual\n- Only include information explicitly stated in the content\n- Avoid long explanations - keep each point brief and direct\n- Create 3-5 main sections with 2-4 bullet points each\n\nCONTENT:\n\n${filteredContent}` }
+            ],
+            max_tokens: 1500,
+            temperature: 0.1
+          });
+        } catch (summaryError) {
+          console.error('Summary generation failed:', summaryError.message);
+          summaryResponse = { choices: [{ message: { content: 'Summary generation failed. Please try again.' } }] };
+        }
+
+        // Notes section removed - keeping only summary which is working well
+
+        try {
+          qaResponse = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: "You are a question generator. Create questions and answers based ONLY on the content provided. Do NOT add any external knowledge or information not explicitly mentioned in the provided text. Generate questions that can be answered using only the information from the lecture. Format each Q&A as 'Q: [question]' followed by 'A: [answer based only on lecture content]' on the next line." },
+              { role: "user", content: `Please create study questions and answers from this lecture content. Base all questions and answers ONLY on what was actually said in the lecture:\n\n${filteredContent}` }
             ],
             max_tokens: 2000,
             temperature: 0.1
           });
-          filteredContent = filterResponse.choices[0].message.content;
+        } catch (qaError) {
+          console.error('Q&A generation failed:', qaError.message);
+          qaResponse = { choices: [{ message: { content: 'Q&A generation failed. Please try again.' } }] };
         }
 
-        const summaryResponse = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "You are a precise summarizer. Output clean, minimal Markdown (headings + bullet points). Most important rule: base the summary ONLY on the provided content. Do NOT add external knowledge, assumptions, or rephrase to include missing context." },
-            { role: "user", content: `Summarize the following content in Markdown with clear bullets and short headings. Use only what is explicitly present. Do not add anything new.\n\n${filteredContent}` }
-          ],
-          max_tokens: 1000,
-          temperature: 0.1
-        });
-
-        const notesResponse = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "You are a note organizer. Produce clean, minimal Markdown with headings and bullet points. Critically: base the notes ONLY on the provided content; do NOT add external knowledge, examples, or assumptions." },
-            { role: "user", content: `Create notes in Markdown based ONLY on the following content. Use: \n\n# Title (if present)\n\n## Key Points\n- ...\n\n## Examples (only if explicitly present)\n- ...\n\nDo not invent anything beyond what is explicitly stated.\n\nCONTENT:\n\n${filteredContent}` }
-          ],
-          max_tokens: 2000,
-          temperature: 0.1
-        });
-
-        const qaResponse = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "You are a question generator. Create questions and answers based ONLY on the content provided. Do NOT add any external knowledge or information not explicitly mentioned in the provided text. Generate questions that can be answered using only the information from the lecture. Format each Q&A as 'Q: [question]' followed by 'A: [answer based only on lecture content]' on the next line." },
-            { role: "user", content: `Please create study questions and answers from this lecture content. Base all questions and answers ONLY on what was actually said in the lecture:\n\n${filteredContent}` }
-          ],
-          max_tokens: 2000,
-          temperature: 0.1
-        });
+        // Validate that we have the required content
+        if (!transcription || !filteredContent) {
+          throw new Error('Failed to generate transcription or filtered content');
+        }
 
         const summary = summaryResponse.choices[0].message.content;
-        const notes = notesResponse.choices[0].message.content;
         const qna = qaResponse.choices[0].message.content;
 
-        await db.updateLecture(lectureId, req.user.id, {
-          transcription,
-          filtered_content: filteredContent,
-          summary,
-          notes,
-          qna,
+        // Validate AI-generated content
+        if (!summary || !qna) {
+          throw new Error('Failed to generate AI content (summary or Q&A)');
+        }
+
+        // Ensure all values are strings, not undefined
+        const lectureData = {
+          transcription: transcription || '',
+          filtered_content: filteredContent || '',
+          summary: summary || '',
+          qna: qna || '',
           processing_status: 'completed',
           processing_completed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
+        };
+
+        // Validate all fields before saving to Firestore
+        Object.keys(lectureData).forEach(key => {
+          if (lectureData[key] === undefined) {
+            console.warn(`Warning: ${key} is undefined, setting to empty string`);
+            lectureData[key] = '';
+          }
         });
+
+        await db.updateLecture(lectureId, req.user.id, lectureData);
 
         console.log('Lecture processed and updated successfully');
       } catch (e) {
         console.error('Background processing failed:', e);
         await db.updateLecture(lectureId, req.user.id, {
-          processing_status: 'error',
-          processing_error: e.message,
+          processing_status: 'failed',
+          error_message: e.message || 'Unknown error occurred',
           updated_at: new Date().toISOString()
-        }).catch(() => {});
+        }).catch((dbError) => {
+          console.error('Failed to update lecture status:', dbError);
+        });
       } finally {
         // Clean up uploaded file
         fs.remove(audioPath).catch(console.error);
@@ -427,10 +539,10 @@ app.post('/api/merge-lecture', requireAuth, async (req, res) => {
         },
         {
           role: "user",
-          content: `Please create a comprehensive academic summary of this merged lecture content:\n\n${fullFilteredContent}`
+          content: `Create a structured summary in this exact format:\n\n**1. [Main Topic]**\n\n• Key point 1\n\n• Key point 2\n\n• Key point 3\n\n**2. [Next Topic]**\n\n• Key point 1\n\n• Key point 2\n\n**3. [Another Topic]**\n\n• Key point 1\n\n• Key point 2\n\nFormat Requirements:\n- Use **Bold** for section headings (1., 2., 3., etc.)\n- Use • for bullet points under each section\n- Each bullet point must be a single, clear sentence\n- No paragraph-style writing - only bullet points and sentences\n- **CRITICAL: Add a blank line between each bullet point**\n- **CRITICAL: Add a blank line after each section heading**\n- Keep points concise and factual\n- Only include information explicitly stated in the content\n- Avoid long explanations - keep each point brief and direct\n- Create 3-5 main sections with 2-4 bullet points each\n\nPlease create a comprehensive academic summary of this merged lecture content:\n\n${fullFilteredContent}`
         }
       ],
-      max_tokens: 1000,
+      max_tokens: 1500,
       temperature: 0.3
     });
 

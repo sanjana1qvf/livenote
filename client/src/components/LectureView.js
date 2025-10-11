@@ -165,26 +165,9 @@ const LectureView = () => {
 
     pdf.setTextColor(0, 0, 0);
 
-    // Summary Section
+    // Summary Section Only
     addWrappedText('LECTURE SUMMARY', 14, true, true);
     addWrappedText(lecture.summary, 11);
-    currentY += 10;
-
-    // Notes Section
-    addWrappedText('STRUCTURED NOTES', 14, true, true);
-    addWrappedText(lecture.notes, 11);
-    currentY += 10;
-
-    // Academic Content Section (if available)
-    if (lecture.filtered_content) {
-      addWrappedText('ACADEMIC CONTENT', 14, true, true);
-      addWrappedText(lecture.filtered_content, 10);
-      currentY += 10;
-    }
-
-    // Full Transcript Section
-    addWrappedText('FULL TRANSCRIPT', 14, true, true);
-    addWrappedText(lecture.transcription, 9);
 
     // Footer on last page
     const totalPages = pdf.internal.getNumberOfPages();
@@ -357,7 +340,6 @@ const LectureView = () => {
 
   const tabs = [
     { id: 'summary', label: 'Summary', icon: FileText },
-    { id: 'notes', label: 'Notes', icon: FileText },
     { id: 'academic', label: 'Academic Content', icon: FileText },
     { id: 'transcript', label: 'Full Transcript', icon: FileText },
   ];
@@ -479,7 +461,6 @@ const LectureView = () => {
                 <span className="hidden xs:block">{tab.label}</span>
                 <span className="block xs:hidden">
                   {tab.id === 'summary' ? 'Summary' : 
-                   tab.id === 'notes' ? 'Notes' : 
                    tab.id === 'academic' ? 'Academic' : 'Transcript'}
                 </span>
               </button>
@@ -528,43 +509,6 @@ const LectureView = () => {
           </div>
         )}
 
-        {/* Notes Tab */}
-        {activeTab === 'notes' && (
-          <div className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Structured Notes</h2>
-              <div className="flex items-center space-x-2 self-start sm:self-auto">
-                <button
-                  onClick={() => copyToClipboard(lecture.notes, 'notes')}
-                  className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border rounded-md hover:bg-gray-50"
-                >
-                  {copiedStates.notes ? (
-                    <>
-                      <Check className="h-4 w-4 text-green-600" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4" />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </button>
-                <DownloadDropdown 
-                  content={lecture.notes}
-                  sectionTitle="Notes"
-                  baseFilename={`${lecture.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_notes`}
-                  dropdownId="notes"
-                />
-              </div>
-            </div>
-            <div className="prose max-w-none">
-              <div className="text-gray-800 leading-relaxed">
-                <ReactMarkdown>{lecture.notes}</ReactMarkdown>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Academic Content Tab */}
         {activeTab === 'academic' && (
